@@ -1,0 +1,219 @@
+/* ==============================
+   BASE
+============================== */
+:root{
+  --h: 64px;           /* altura real del header fijo (ajusta si difiere) */
+  --brand:#6d5ef3;
+  --surface:#151821;
+  --line:#222736;
+  --text:#fff;
+  --bg:#0d0f14;
+}
+
+/* Compensa el header fijo cuando se usan anclas (#id) */
+html { scroll-padding-top: var(--h); }
+
+/* ==============================
+   CONTENEDOR GENERAL (no padding-top aquí)
+============================== */
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  box-sizing:border-box;
+}
+*,*::before,*::after{ box-sizing:inherit; }
+
+.container{
+  width:100%;
+  max-width:1200px;
+  margin:0 auto;
+  padding:0 16px 48px; /* SIN padding-top: lo maneja .products-page */
+}
+
+/* Esta página agrega el espacio bajo el header fijo */
+.products-page{
+  padding-top: calc(var(--h) + 24px) !important; /* fuerza separación bajo header */
+  min-height:100vh;
+  background:var(--bg);
+  color:var(--text);
+  display:block;
+}
+
+/* ==============================
+   HEADER DE SECCIÓN
+============================== */
+.products-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin:20px 0;
+}
+.products-page h1{
+  margin:0 0 8px;
+  line-height:1.1;
+}
+
+/* ==============================
+   GRID
+============================== */
+.grid{
+  display:grid;
+  gap:20px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+/* ==============================
+   CARD
+============================== */
+.product-card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  cursor:pointer;
+  transition:transform .18s ease, box-shadow .18s ease;
+  overflow:hidden;
+}
+.product-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 6px 16px rgba(0,0,0,.35);
+}
+
+/* ==============================
+   MEDIA: carrusel SIN RECORTES
+   (ajustado para imágenes 500x500)
+============================== */
+.card-media{
+  width:100%;
+  aspect-ratio: 1 / 1;          /* ⬅️ cuadrado para 500x500 */
+  background:#0f1220;
+  border-radius:10px;
+  overflow:hidden;
+  position:relative;
+  display:block;
+}
+
+/* Todo lo que renderice el carrusel ocupa la caja */
+.card-media > *{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+}
+
+/* Swiper wrappers al 100% */
+.card-media :where(.swiper, .swiper-wrapper, .swiper-slide){
+  width:100%;
+  height:100%;
+}
+
+/* 🔒 Fuerza contain (sin recortes) en cualquier <img> del carrusel */
+.card-media :where(img, picture > img){
+  width:100% !important;
+  height:100% !important;
+  object-fit: contain !important;   /* ⬅️ clave: NO recorta */
+  display:block;
+  background:#0f1220;
+  border-radius:10px;
+}
+
+/* Por si el theme del Swiper mete paddings en la slide */
+.card-media .swiper-slide{
+  padding:0 !important;
+}
+
+/* Opcional: si ves bordes “comidos” por border-radius */
+.product-card{
+  overflow: visible;  /* evita que el borde de la imagen parezca recortado */
+}
+
+
+/* ==============================
+   TEXTO Y META
+============================== */
+.product-title{
+  margin:4px 0 0;
+  font-size:1.05rem;
+  font-weight:500;
+}
+.product-desc{
+  opacity:.8;
+  margin:0 0 8px;
+  line-height:1.35;
+  max-height:3.6em;
+  overflow:hidden;
+}
+.product-meta{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin-top:auto;
+  opacity:.95;
+  flex-wrap:wrap;
+}
+.product-meta span{ opacity:.8; }
+
+/* ==============================
+   BOTÓN
+============================== */
+.addProductButton{
+  padding:8px 12px;
+  border-radius:8px;
+  border:1px solid var(--brand);
+  background:transparent;
+  color:var(--brand);
+  cursor:pointer;
+  transition:.2s;
+}
+.addProductButton:hover{ background:var(--brand); color:#fff; }
+
+/* ==============================
+   PAGINADOR
+============================== */
+.paginator{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin-top:28px;
+}
+.pag-btn{
+  min-width:36px;
+  height:36px;
+  padding:0 10px;
+  border-radius:8px;
+  border:1px solid var(--brand);
+  background:transparent;
+  color:var(--text);
+  font-size:18px;
+  cursor:pointer;
+}
+.pag-btn:hover{ background:var(--brand); color:#111; }
+.pag-btn:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+  border-color:#555;
+  color:#bbb;
+  background:#1a1d2b;
+}
+.page-info{ margin:0 6px; opacity:.9; }
+
+/* ==============================
+   RESPONSIVE
+============================== */
+@media (max-width: 992px){
+  .products-page{ padding-top: calc(var(--h) + 16px) !important; }
+  .container{ padding:0 16px 40px; }
+}
+@media (max-width: 600px){
+  .products-header{
+    flex-direction:column;
+    gap:8px;
+    align-items:flex-start;
+  }
+  .page-info{ font-size:.95rem; }
+}

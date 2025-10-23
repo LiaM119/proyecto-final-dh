@@ -1,0 +1,43 @@
+/* VARIABLES Y BASE */
+html, body, #root { height: 100%; }
+:root { --h: 64px; --brand: #6d5ef3; }
+* {box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, Arial, sans-serif; }
+
+html {
+  background: linear-gradient(180deg, #0f1220 0%, #0b0d16 100%);
+  /* fija el fondo al viewport para evitar micro-grietas en algunos navegadores */
+  background-attachment: fixed;
+}
+
+body, #root { 
+  background: transparent; 
+  margin: 0;
+  font-family: system-ui, Arial, sans-serif;
+}
+
+
+/* HEADER FIJO, 100% ANCHO, CONSISTENTE Y RESPONSIVE */
+.encabezado {
+  position: fixed; top: 0; left: 0; right: 0; height: var(--h);
+  background: #111; color: #fff; z-index: 1000;
+}
+
+.div-encabezado{
+  height: 100%;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px;
+}
+
+/* Logo + Lema con link a home */
+.marca{ display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; }
+.marca_logo{ background: var(--brand); color: #fff; padding: 6px 10px; border-radius: 8px; font-weight: 700; }
+.marca_tag{ opacity: .9; font-size: .95rem; }
+
+/* Botones */
+.encabezado-acciones{ display: flex; gap: 10px;}
+.btn-encabezado{ padding: 8px 12px; border-radius: 8px; border: 1px solid var(--brand); background: transparent; color: var(--brand); cursor: pointer;} 
+.btn-encabezado:hover { background: var(--brand); color: #fff; transition: 0.3s ease-in;}
+
+/* Responsive: ocultar lema en celulares chicos */
+@media (max-width: 600px) { .marca_tag { display: none; } } 
