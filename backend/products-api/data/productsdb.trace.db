@@ -1,0 +1,8 @@
+2025-10-05 09:24:56.456173-03:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Tabla "PRODUCT" no encontrada
+Table "PRODUCT" not found; SQL statement:
+DELETE FROM product WHERE id = 1 [42102-232]
+2025-10-05 09:25:31.084528-03:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Tabla "PRODUCT" no encontrada
+Table "PRODUCT" not found; SQL statement:
+DELETE FROM product WHERE name = 'SSD 240GB' [42102-232]
