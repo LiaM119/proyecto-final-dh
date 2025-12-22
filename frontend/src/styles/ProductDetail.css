@@ -14,145 +14,148 @@ html { scroll-padding-top: var(--h); }
   display:grid;
   grid-template-columns: 1.2fr 1fr;
   gap:36px;
+  align-items:start;
+  grid-auto-rows:auto;
 }
 
 /* ================================
    GALERÍA (Swiper principal + thumbs)
    ================================ */
-.pdp-gallery{
-  display:grid;
-  gap:12px;
-}
+.pdp-gallery{ display:grid; gap:12px; }
 
-/* Marco principal (misma estética de la “grande” del mock) */
-/* === Imagen principal SIN recortes === */
+/* Marco principal */
 .pdp-main{
   background:#0f1320;
   border:1px solid var(--line);
   border-radius:16px;
-  padding: clamp(8px,1.4vw,16px);
-  /* QUITAMOS la proporción fija para que no corte */
-  aspect-ratio: auto;
-  /* Le damos una altura flexible que nunca “apriete” la imagen */
-  height: clamp(380px, 56vh, 560px);
+  padding:clamp(8px,1.4vw,16px);
+  height:clamp(380px,56vh,560px);
   display:flex;
   align-items:center;
   justify-content:center;
-  overflow:hidden;           /* para los bordes redondeados */
+  overflow:hidden;
 }
 
 .pdp-main img{
-  /* La imagen siempre entra completa dentro del marco */
   max-width:100%;
   max-height:100%;
   width:auto;
   height:auto;
-  object-fit: contain;
+  object-fit:contain;
   display:block;
   border-radius:12px;
   background:#0b0e17;
+  transition:transform .18s ease;
+}
+.pdp-main img:hover{ transform:scale(1.02); }
+
+/* Swiper principal */
+.pdp-main-swiper{ --swiper-navigation-size:22px; width:100%; height:auto !important; }
+.pdp-main-swiper .swiper{ height:auto !important; }
+.pdp-main-swiper .swiper-wrapper{ height:auto !important; align-items:stretch; }
+.pdp-main-swiper .swiper-slide{
+  height:auto !important;
+  position:relative !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  border:0 !important;
+}
+.pdp-main-swiper .swiper-slide > .pdp-main{ width:100%; }
+.pdp-main-swiper .swiper-slide img{
+  display:block !important;
+  max-width:100% !important;
+  max-height:100% !important;
+  width:auto !important;
+  height:auto !important;
+  object-fit:contain !important;
+  background:transparent !important;
+  border-radius:0 !important;
 }
 
-.pdp-main img:hover { transform: scale(1.02); transition: transform .18s ease; }
-
-/* —— Swiper principal —— */
-.pdp-main-swiper{ --swiper-navigation-size: 22px; }
 .pdp-main-swiper .swiper-button-prev,
-.pdp-main-swiper .swiper-button-next{
-  width: 36px; height: 36px;
-  border-radius: 999px;
-  background: rgba(0,0,0,.45);
-  color:#fff;
-}
-.pdp-main-swiper .swiper-button-prev:after,
-.pdp-main-swiper .swiper-button-next:after{ font-size: 16px; }
+.pdp-main-swiper .swiper-button-next{ display:none !important; }
 
-/* —— Carrusel de miniaturas —— */
-/* Mostramos exactamente 3 miniaturas visibles y evitamos que el slide se estire */
+/* Carrusel de miniaturas */
 .pdp-thumbs-swiper{
-  padding: 4px 30px;                 /* espacio para flechas */
-  width: 100%;
+  padding:4px 24px;
+  width:100%;
 }
-
-.pdp-thumbs-swiper .swiper-wrapper{
-  align-items: stretch;
-}
-
-/* 2 gaps de 8px (spaceBetween=8) => 16px; el resto se divide en 3 */
+.pdp-thumbs-swiper .swiper-wrapper{ align-items:stretch; }
 .pdp-thumbs-swiper .swiper-slide{
-  box-sizing: border-box;
-  flex: 0 0 calc((100% - 16px)/3) !important;
-  width: calc((100% - 16px)/3) !important;
-  max-width: 140px;                  /* límite superior para que no se haga gigante */
-  border-radius: 10px;
-  overflow: hidden;
+  box-sizing:border-box;
+  flex:0 0 calc((100% - 16px)/3) !important;
+  width:calc((100% - 16px)/3) !important;
+  max-width:140px;
+  border-radius:10px;
+  overflow:hidden;
+  display:block !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  border:0 !important;
+  min-width:0 !important;
 }
 
-/* Botón/Marco de miniatura */
 .pdp-thumb{
-  all: unset;
-  display: block;
-  width: 100%;
-  cursor: pointer;
-  border-radius: 10px;
-  overflow: hidden;
-  outline: 0;
-  border: 1px solid var(--line);
+  all:unset;
+  display:block;
+  width:100%;
+  cursor:pointer;
+  border-radius:10px;
+  overflow:hidden;
+  border:1px solid var(--line);
   background:#0f1320;
-  transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
-  aspect-ratio: 1 / 1;               /* cuadrado consistente */
+  transition:border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+  aspect-ratio:1/1;
 }
-
 .pdp-thumb img{
-  width: 100%;
-  height: 100%;
-  object-fit: cover;                  /* llena el cuadrado sin deformar */
-  display: block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
   background:#0b0e17;
-  border-radius: 8px;
+  border-radius:8px;
 }
-
-/* Estado “seleccionado” (thumb activa) */
 .pdp-thumbs-swiper .swiper-slide-thumb-active .pdp-thumb{
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(110,79,247,.25);
+  border-color:var(--accent);
+  box-shadow:0 0 0 2px rgba(110,79,247,.25);
 }
 
-/* Flechas de thumbs más chicas y discretas */
+/* Flechas miniaturas */
 .pdp-thumbs-swiper .swiper-button-prev,
 .pdp-thumbs-swiper .swiper-button-next{
-  width: 22px; height: 22px;
-  border-radius: 999px;
-  background: rgba(0,0,0,.45);
+  width:22px; height:22px;
+  border-radius:999px;
+  background:rgba(0,0,0,.45);
   color:#fff;
 }
 .pdp-thumbs-swiper .swiper-button-prev:hover,
-.pdp-thumbs-swiper .swiper-button-next:hover{
-  background: rgba(0,0,0,.6);
-}
+.pdp-thumbs-swiper .swiper-button-next:hover{ background:rgba(0,0,0,.6); }
 .pdp-thumbs-swiper .swiper-button-prev::after,
-.pdp-thumbs-swiper .swiper-button-next::after{
-  font-size: 12px;
-}
+.pdp-thumbs-swiper .swiper-button-next::after{ font-size:12px; }
 
 /* ================================
    INFO
    ================================ */
 .pdp-info{
   position:relative;
-  background:linear-gradient(180deg, #121625, #0f1320 60%);
+  background:linear-gradient(180deg,#121625,#0f1320 60%);
   border:1px solid var(--line);
-  border-radius:16px; padding:20px;
+  border-radius:16px;
+  padding:20px;
 }
 .pdp-title{
   margin:0 0 8px;
-  font-size:clamp(22px, 2.2vw, 30px);
-  color:var(--text); font-weight:700;
+  font-size:clamp(22px,2.2vw,30px);
+  color:var(--text);
+  font-weight:700;
 }
 .pdp-chips{ display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 14px; }
 .chip{
   display:inline-flex; align-items:center; gap:6px;
-  padding:6px 10px; border-radius:999px; font-size:12px; letter-spacing:.2px;
+  padding:6px 10px; border-radius:999px; font-size:12px;
   border:1px solid var(--line); color:#cfd5e7; background:#0f1320;
 }
 .chip.ok{ color:#b7ffd9; border-color:#1e3b2f; background:#0f1a15; }
@@ -160,8 +163,10 @@ html { scroll-padding-top: var(--h); }
 .chip.ghost{ color:#cbbcff; border-color:#2b2550; background:#171233; }
 
 .pdp-price{
-  font-size:clamp(26px, 3vw, 36px);
-  font-weight:800; color:#fff; margin:4px 0 14px;
+  font-size:clamp(26px,3vw,36px);
+  font-weight:800;
+  color:#fff;
+  margin:4px 0 14px;
   text-shadow:0 0 24px rgba(110,79,247,.25);
 }
 .pdp-desc{ color:var(--muted); line-height:1.6; margin:0 0 18px; }
@@ -177,19 +182,21 @@ html { scroll-padding-top: var(--h); }
   background:#191e2e; color:#fff; font-size:18px; line-height:36px;
 }
 .qty input{
-  width:56px; height:36px; text-align:center; color:#fff; background:transparent; border:0;
-  font-weight:700; font-size:16px; outline:none;
+  width:56px; height:36px; text-align:center; color:#fff;
+  background:transparent; border:0; font-weight:700; font-size:16px; outline:none;
 }
 
 .cta{ display:flex; gap:10px; flex-wrap:wrap; }
 .btn{
-  border:1px solid var(--line); background:#191e2e; color:#fff;
-  padding:12px 16px; border-radius:12px; cursor:pointer; font-weight:700;
-  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+  border:1px solid var(--line);
+  background:#191e2e; color:#fff;
+  padding:12px 16px; border-radius:12px;
+  cursor:pointer; font-weight:700;
+  transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease;
 }
 .btn:hover{ transform:translateY(-1px); border-color:#2b2f47; box-shadow:0 8px 18px rgba(0,0,0,.35); }
 .btn.primary{
-  background:linear-gradient(180deg, var(--accent), var(--accent-2));
+  background:linear-gradient(180deg,var(--accent),var(--accent-2));
   border-color:transparent; color:#fff;
 }
 
@@ -206,10 +213,38 @@ html { scroll-padding-top: var(--h); }
 }
 .pdp-skeleton{
   height:520px; border-radius:16px; border:1px solid var(--line);
-  background:linear-gradient(90deg, #0f1320 25%, #151a2a 37%, #0f1320 63%);
-  background-size:400% 100%; animation: sk 1.2s ease-in-out infinite;
+  background:linear-gradient(90deg,#0f1320 25%,#151a2a 37%,#0f1320 63%);
+  background-size:400% 100%; animation:sk 1.2s ease-in-out infinite;
 }
-@keyframes sk{ 0%{background-position:100% 50%} 100%{background-position:0 50%} }
+@keyframes sk{
+  0%{background-position:100% 50%}
+  100%{background-position:0 50%}
+}
+
+/* ================================
+   Top actions
+   ================================ */
+.pdp-top-actions{
+  grid-column:1 / -1;
+  align-self:start;
+  display:flex;
+  justify-content:flex-end;
+  margin:8px 0 16px;
+  position:relative;
+  z-index:2;
+}
+.back-btn{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:8px 12px; border-radius:10px;
+  background:transparent; border:1px solid var(--line);
+  color:var(--muted); cursor:pointer;
+  transition:border-color .2s ease, color .2s ease, background .2s ease;
+}
+.back-btn:hover{
+  color:var(--text);
+  border-color:var(--accent);
+  background:rgba(110,79,247,.08);
+}
 
 /* ================================
    Responsive
@@ -219,86 +254,25 @@ html { scroll-padding-top: var(--h); }
   .pdp-info{ order:2; }
   .pdp-gallery{ order:1; }
 
-  /* Miniaturas más compactas en móvil (siguen siendo 3 visibles) */
   .pdp-thumbs-swiper .swiper-slide{
-    max-width: 110px;
-    flex-basis: calc((100% - 16px)/3) !important;
-    width: calc((100% - 16px)/3) !important;
+    max-width:110px;
+    flex-basis:calc((100% - 16px)/3) !important;
+    width:calc((100% - 16px)/3) !important;
   }
 }
 
-/* Ocultar flechas del principal */
-.pdp-main-swiper .swiper-button-prev,
-.pdp-main-swiper .swiper-button-next { display:none !important; }
+/* === FIX GLOBAL DE OVERFLOW === */
+*, *::before, *::after{ box-sizing:border-box; }
+html, body{ width:100%; overflow-x:hidden; }
+.pdp, .pdp-gallery, .pdp-info, .pdp-main, .pdp-thumbs-swiper{ overflow-x:hidden; }
+.pdp-thumbs-swiper .swiper,
+.pdp-thumbs-swiper .swiper-wrapper{ width:100% !important; }
 
-/* Cuando está animando, bloquear clicks rápidos en flechas del carrusel */
-.pdp-gallery.is-animating .pdp-thumbs-swiper .swiper-button-prev,
-.pdp-gallery.is-animating .pdp-thumbs-swiper .swiper-button-next {
-  pointer-events: none;
-  opacity: .4;
+.pdp-main{
+  border-radius: 20px !important;
+  overflow: hidden; 
 }
 
-/* Suavizar transición visual */
-.pdp-main-swiper .swiper-slide,
-.pdp-thumbs-swiper .swiper-slide {
-  transition: transform .9s ease, opacity .9s ease !important;
-}
-
-.pdp-top-actions{
-  display: flex;
-  justify-content: flex-end;
-  margin: 8px 0 16px;
-  position: relative;
-  z-index: 1;              /* por si el header o el carrusel lo tapan */
-}
-
-.back-btn{
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 10px;
-  background: transparent;
-  border: 1px solid var(--line, #222736);
-  color: var(--muted, #a7adbb);
-  cursor: pointer;
-  transition: border-color .2s ease, color .2s ease, background .2s ease;
-}
-
-.back-btn:hover{
-  color: var(--text, #fff);
-  border-color: var(--accent, #6e4ff7);
-  background: rgba(110,79,247,.08);
-}
-
-/* Fallback: si por algún motivo no carga el ícono SVG, mostramos una flecha */
-.back-btn svg{ display: block; }
-.back-btn svg:empty + span::before{
-  content: "← ";
-}
-
-/* La fila del botón debe abarcar el ancho completo del grid */
-.pdp-top-actions{
-  grid-column: 1 / -1;      /* span across both columns */
-  align-self: start;        /* que no se estire en vertical */
-  justify-content: flex-end;
-  margin: 8px 0 16px;
-  position: relative;
-  z-index: 2;
-  background: transparent;  /* por si hereda algo */
-  border: 0;                /* por si hereda algo */
-  padding: 0;               /* por si hereda algo */
-  height: auto;             /* evita la “columna alta” */
-}
-
-/* Aseguramos la colocación de las otras secciones en desktop */
-@media (min-width: 1025px){
-  .pdp-gallery{ grid-column: 1 / 2; }
-  .pdp-info{    grid-column: 2 / 3; }
-}
-
-/* Evitar que el grid estire hijos por defecto */
-.pdp{
-  align-items: start;
-  grid-auto-rows: auto;
+.pdp-main-swiper .swiper-slide .pdp-main img{
+  border-radius: 20px !important;
 }

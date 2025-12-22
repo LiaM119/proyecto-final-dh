@@ -1,0 +1,11 @@
+security:
+  jwt:
+    secret: change-this-to-a-VERY-LONG-random-secret-string-64chars-min-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    expirationMs: 604800000
+spring:
+  h2:
+    console:
+      enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: update

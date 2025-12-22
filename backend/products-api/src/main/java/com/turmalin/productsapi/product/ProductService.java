@@ -1,42 +1,48 @@
 package com.turmalin.productsapi.product;
 
+import com.turmalin.productsapi.category.Category;
+import com.turmalin.productsapi.category.CategoryRepository;
 import com.turmalin.productsapi.product.dto.ProductDTO;
 import com.turmalin.productsapi.storage.FileStorageService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+
 @Service
 public class ProductService {
 
     private final ProductRepository repo;
     private final FileStorageService storage;
+    private final CategoryRepository categoryRepository;
 
-    public ProductService(ProductRepository repo, FileStorageService storage) {
+    public ProductService(ProductRepository repo,
+                          FileStorageService storage,
+                          CategoryRepository categoryRepository) {
         this.repo = repo;
         this.storage = storage;
+        this.categoryRepository = categoryRepository;
     }
 
-    // 🔹 Verifica si ya existe un producto con ese nombre
     public boolean existsByName(String name) {
         return repo.existsByNameIgnoreCase(name);
     }
 
-    // 🔹 Crear un nuevo producto con imágenes
     public ProductDTO create(
             String name,
             String description,
             BigDecimal price,
             Integer stock,
-            String category,
+            Long categoryId,
             List<MultipartFile> images
     ) throws IOException {
 
-        // Validación de nombre duplicado
         if (repo.existsByNameIgnoreCase(name)) {
             throw new IllegalStateException("El nombre del producto ya existe");
         }
@@ -46,13 +52,19 @@ public class ProductService {
         p.setDescription(description);
         p.setPrice(price);
         p.setStock(stock);
-        p.setCategory(category);
 
-        // Guardar imágenes si existen
+        if (categoryId != null) {
+            Category cat = categoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Category not found"));
+            p.setCategory(cat);
+        } else {
+            p.setCategory(null);
+        }
+
         if (images != null && !images.isEmpty()) {
             for (MultipartFile img : images) {
                 String path = storage.save(img);
-                p.addImage(path); // asegúrate de tener este método en Product
+                p.addImage(path);
             }
         }
 
@@ -60,25 +72,55 @@ public class ProductService {
         return toDto(p);
     }
 
-    // 🔹 Listar todos los productos
-    public List<ProductDTO> findAll() {
-        return repo.findAll()
-                .stream()
-                .map(this::toDto)
-                .toList();
+    public ProductDTO update(
+            Long id,
+            String name,
+            String description,
+            BigDecimal price,
+            Integer stock,
+            Long categoryId,
+            List<MultipartFile> images // opcional: reemplaza/añade
+    ) throws IOException {
+
+        Product p = repo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Product not found"));
+
+        if (name != null && !name.isBlank()) p.setName(name);
+        if (description != null) p.setDescription(description);
+        if (price != null) p.setPrice(price);
+        if (stock != null) p.setStock(stock);
+
+        if (categoryId != null) {
+            Category cat = categoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Category not found"));
+            p.setCategory(cat);
+        } else {
+            p.setCategory(null);
+        }
+
+        if (images != null && !images.isEmpty()) {
+            for (MultipartFile img : images) {
+                String path = storage.save(img);
+                p.addImage(path);
+            }
+        }
+
+        return toDto(p);
     }
 
-    // 🔹 Buscar producto por ID
+    public List<ProductDTO> findAll() {
+        return repo.findAll().stream().map(this::toDto).toList();
+    }
+
     public Optional<ProductDTO> findById(Long id) {
         return repo.findById(id).map(this::toDto);
     }
 
-    // 🔹 Eliminar producto
     public void delete(Long id) {
         repo.deleteById(id);
     }
 
-    // 🔹 Conversión de entidad → DTO
+    // ===== mapper =====
     private ProductDTO toDto(Product p) {
         ProductDTO dto = new ProductDTO();
         dto.setId(p.getId());
@@ -86,8 +128,15 @@ public class ProductService {
         dto.setDescription(p.getDescription());
         dto.setPrice(p.getPrice());
         dto.setStock(p.getStock());
-        dto.setCategory(p.getCategory());
-        dto.setImageUrls(p.getImageUrls()); // getter en Product
+        dto.setImageUrls(p.getImageUrls());
+
+        if (p.getCategory() != null) {
+            dto.setCategoryId(p.getCategory().getId());
+            dto.setCategoryName(p.getCategory().getName());
+        } else {
+            dto.setCategoryId(null);
+            dto.setCategoryName(null);
+        }
         return dto;
     }
 }

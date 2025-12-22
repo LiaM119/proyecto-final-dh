@@ -1,0 +1,52 @@
+/* Selector */
+.cat-select { display: grid; gap: 6px; }
+.cat-header { display:flex; align-items:center; justify-content:space-between; }
+.cat-label { color: var(--muted, #a7adbb); font-size: 14px; }
+.cat-add-btn {
+  padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line, #222736);
+  background: #0f1220; color: var(--text, #fff); cursor: pointer;
+}
+.cat-add-btn:hover { border-color: var(--accent, #6e4ff7); }
+.cat-field { position: relative; }
+.cat-control {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line, #222736);
+  background: #0f1220;
+  color: var(--text, #fff);
+  outline: none;
+}
+.cat-control:focus { border-color: var(--accent, #6e4ff7); }
+.cat-hint { position:absolute; right:10px; top:50%; transform:translateY(-50%); font-size:12px; color:var(--muted,#a7adbb); }
+.has-error .cat-control { border-color: #e55353; }
+.cat-error { color:#e55353; font-size:12px; }
+
+/* Modal */
+.cat-modal-backdrop{
+  position:fixed; inset:0; background:rgba(0,0,0,.6);
+  display:flex; align-items:center; justify-content:center; z-index:999;
+}
+.cat-modal{
+  width:min(520px, 92vw);
+  background: var(--surface,#151821);
+  border:1px solid var(--line,#222736);
+  border-radius:12px; padding:16px; color:var(--text,#fff);
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+}
+.cat-modal h3{ margin:0 0 10px; }
+.cat-modal-form{ display:grid; gap:8px; }
+.cat-modal input, .cat-modal textarea{
+  padding:10px 12px; border-radius:8px; background:#0f1220; border:1px solid #2a2f45; color:#fff;
+}
+.cat-modal-actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:8px; }
+button.secondary{
+  background:transparent; color:var(--muted,#a7adbb);
+  border:1px solid var(--line,#222736); border-radius:8px; padding:8px 12px;
+}
+button{
+  padding:8px 12px; border-radius:8px; border:1px solid var(--line,#222736);
+  background: var(--accent,#6e4ff7); color:#fff; cursor:pointer;
+}
+.alert.error{ background:#2a0f14; border:1px solid #e55353; color:#ffb3b3; padding:8px 10px; border-radius:8px; }
+

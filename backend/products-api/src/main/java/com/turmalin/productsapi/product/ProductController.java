@@ -27,60 +27,66 @@ public class ProductController {
         this.service = service;
     }
 
-    // 🔹 Verificar si existe un producto por nombre
     @GetMapping("/check-name")
     public Map<String, Boolean> checkName(@RequestParam String name) {
         return Map.of("exists", service.existsByName(name));
     }
 
-    // 🔹 Obtener producto por ID
     @GetMapping("/{id}")
     public ResponseEntity<ProductDTO> getOne(@PathVariable Long id) {
-        return service.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return service.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    // 🔹 Listar todos los productos
     @GetMapping
-    public List<ProductDTO> list() {
-        return service.findAll();
-    }
+    public List<ProductDTO> list() { return service.findAll(); }
 
-    // 🔹 Crear un nuevo producto (multipart/form-data)
+    // ===== CREATE (multipart) =====
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> create(
             @RequestParam("name") String name,
             @RequestParam("description") String description,
             @RequestParam("price") BigDecimal price,
             @RequestParam("stock") Integer stock,
-            @RequestParam(value = "category", required = false) String category,
+            @RequestParam(value = "categoryId", required = false) Long categoryId,
             @RequestPart(value = "images", required = false) List<MultipartFile> images
     ) {
         try {
-            ProductDTO dto = service.create(name, description, price, stock, category, images);
+            ProductDTO dto = service.create(name, description, price, stock, categoryId, images);
             return ResponseEntity.status(HttpStatus.CREATED).body(dto);
-
         } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("error", "Nombre duplicado"));
-
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "Nombre duplicado"));
         } catch (IOException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al procesar las imágenes"));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Error al procesar las imágenes"));
         }
     }
 
-    // 🔹 Eliminar producto por ID
+    // ===== UPDATE (multipart) =====
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> update(
+            @PathVariable Long id,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "price", required = false) BigDecimal price,
+            @RequestParam(value = "stock", required = false) Integer stock,
+            @RequestParam(value = "categoryId", required = false) Long categoryId,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images
+    ) {
+        try {
+            ProductDTO dto = service.update(id, name, description, price, stock, categoryId, images);
+            return ResponseEntity.ok(dto);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Error al procesar las imágenes"));
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         try {
             service.delete(id);
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Producto no encontrado"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Producto no encontrado"));
         }
     }
 }
+

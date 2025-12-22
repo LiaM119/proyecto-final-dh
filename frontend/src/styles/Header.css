@@ -1,0 +1,167 @@
+/* ====== Header sólido oscuro aislado (prefijo hdr-) ====== */
+:root { --hdr-h: 64px; --hdr-brand: #6d5ef3; }
+
+.hdr, .hdr * { box-sizing: border-box; }
+
+.hdr {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: var(--hdr-h);
+  background: #0b0d16;
+  z-index: 10000;
+  display: flex; align-items: center;
+  box-shadow: 0 2px 12px rgba(0,0,0,.45);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+.hdr__inner {
+  width: 100%; max-width: 1200px;
+  margin: 0 auto; padding: 0 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 100%;
+}
+
+/* LOGO */
+.hdr__logo {
+  color: #fff !important;
+  text-decoration: none !important;
+  font-weight: 800; letter-spacing: .2px;
+  display: inline-block; padding: 6px 0;
+}
+
+/* NAV */
+.hdr__nav {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: nowrap; 
+}
+
+.hdr a,
+.hdr a:link,
+.hdr a:visited {
+  color: #e9ecff !important;
+  text-decoration: none !important;
+}
+
+.hdr__link {
+  padding: 6px 8px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.hdr__link:hover { color: #ffffff !important; opacity: .9; background: rgba(255,255,255,0.06); }
+
+/* Botones */
+.hdr__btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--hdr-brand);
+  background: var(--hdr-brand);
+  color: #fff !important;
+  font-weight: 600;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.hdr__btn--ghost {
+  background: transparent;
+  color: var(--hdr-brand) !important;
+}
+.hdr__btn--ghost:hover { background: var(--hdr-brand); color: #fff !important; }
+
+.hdr__btn--danger {
+  border-color: #d64545;
+  background: transparent;
+  color: #ff6b6b !important;
+}
+.hdr__btn--danger:hover { background: #d64545; color: #fff !important; }
+
+.hdr__user { color: #cfd3ff; font-weight: 700; margin-right: 2px; }
+
+/* =========================
+   DROPDOWN (CLICK) acorde al header
+   ========================= */
+
+.hdr__dropdown {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Botón Productos con look de link */
+.hdr__link--btn {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+/* Estado abierto */
+.hdr__link--btn.is-open {
+  background: rgba(109, 94, 243, 0.14);
+  outline: 1px solid rgba(109, 94, 243, 0.25);
+}
+
+/* caret */
+.hdr__caret { opacity: .85; transform: translateY(1px); }
+
+/* Menú */
+.hdr__menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  min-width: 240px;
+  background: #0f1220;
+  border: 1px solid rgba(109,94,243,.28);
+  border-radius: 14px;
+  padding: 8px;
+  z-index: 10001;
+  box-shadow: 0 16px 34px rgba(0,0,0,.55);
+}
+
+.hdr__item {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  color: #e9ecff;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.hdr__item:hover {
+  background: rgba(109, 94, 243, 0.12);
+}
+
+.hdr__item--top { font-weight: 700; }
+.hdr__item--muted { opacity: .7; cursor: default; }
+
+.hdr__sep {
+  height: 1px;
+  background: rgba(255,255,255,.10);
+  margin: 6px 0;
+}
+
+/* Mobile */
+@media (max-width: 720px) {
+  :root { --hdr-h: 58px; }
+  .hdr__inner { padding: 0 12px; }
+  .hdr__nav { gap: 10px; flex-wrap: wrap; } 
+  .hdr__btn { padding: 7px 10px; border-radius: 8px; }
+
+  .hdr__menu {
+    left: auto;
+    right: 0;
+    min-width: 210px;
+  }
+}
+
+.hdr-spacer { height: var(--hdr-h); }

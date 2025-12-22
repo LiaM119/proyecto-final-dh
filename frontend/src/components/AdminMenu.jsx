@@ -7,10 +7,26 @@ export default function AdminMenu() {
       <h2>Administración</h2>
       <nav>
         <ul>
-          <li><NavLink to="/admin/productos/nuevo">Agregar producto</NavLink></li>
-          <li><NavLink to="/administracion/productos">Lista de productos</NavLink></li>
-          <li><button type="button" disabled>Gestión de usuarios</button></li>
-          <li><button type="button" disabled>Reservas</button></li>
+          <li>
+            <NavLink to="/administracion/productos/nuevo">
+              Agregar producto
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/administracion/productos">
+              Lista de productos
+            </NavLink>
+          </li>
+          <li>
+            <button type="button" disabled>
+              Gestión de usuarios
+            </button>
+          </li>
+          <li>
+            <button type="button" disabled>
+              Reservas
+            </button>
+          </li>
         </ul>
       </nav>
     </aside>

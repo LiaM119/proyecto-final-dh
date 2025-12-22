@@ -1,5 +1,6 @@
+// src/pages/admin/AdminPanel.jsx
 import { useEffect, useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, Link } from "react-router-dom";
 import "../../styles/AdminPanel.css";
 import AdminMenu from "../../components/AdminMenu";
 
@@ -22,11 +23,55 @@ export default function AdminPanel() {
   }
 
   return (
-    <div className="admin-panel">
-      <AdminMenu />
-      <div className="admin-outlet">
-        <Outlet />
-      </div>
+    <div className="ap-panel">
+      {/* Sidebar */}
+      <aside className="ap-sidebar">
+        <div className="ap-brand">
+          <span className="ap-dot" />
+          <h2>Administración</h2>
+          <p>Servicio Técnico de PC</p>
+        </div>
+
+        <nav className="ap-menu">
+          <AdminMenu />
+        </nav>
+
+        <div className="ap-meta">
+          <span className="ap-tag">v1.0</span>
+          <span className="ap-muted">Turmalin</span>
+        </div>
+      </aside>
+
+      {/* Área de trabajo */}
+      <main className="ap-content">
+        <header className="ap-toolbar">
+          <h3>Panel de Administración</h3>
+
+          {/* BOTONES PRINCIPALES */}
+          <div className="ap-actions">
+
+            {/* Ir a productos */}
+            <Link to="/administracion/productos" className="ap-chip">
+              Productos
+            </Link>
+
+            {/* Ir a usuarios (acá gestionás roles/admin) */}
+            <Link to="/administracion/usuarios" className="ap-chip">
+              Usuarios
+            </Link>
+
+            {/* Ir a reservas (cuando exista la página) */}
+            <Link to="/administracion/reservas" className="ap-chip">
+              Reservas
+            </Link>
+
+          </div>
+        </header>
+
+        <div className="ap-outlet">
+          <Outlet />
+        </div>
+      </main>
     </div>
   );
 }

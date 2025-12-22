@@ -2,7 +2,7 @@
    BASE
 ============================== */
 :root{
-  --h: 64px;           /* altura real del header fijo (ajusta si difiere) */
+  --h: 64px;           
   --brand:#6d5ef3;
   --surface:#151821;
   --line:#222736;
@@ -10,11 +10,10 @@
   --bg:#0d0f14;
 }
 
-/* Compensa el header fijo cuando se usan anclas (#id) */
 html { scroll-padding-top: var(--h); }
 
 /* ==============================
-   CONTENEDOR GENERAL (no padding-top aquí)
+   CONTENEDOR GENERAL 
 ============================== */
 body{
   margin:0;
@@ -28,12 +27,11 @@ body{
   width:100%;
   max-width:1200px;
   margin:0 auto;
-  padding:0 16px 48px; /* SIN padding-top: lo maneja .products-page */
+  padding:0 16px 48px; 
 }
 
-/* Esta página agrega el espacio bajo el header fijo */
 .products-page{
-  padding-top: calc(var(--h) + 24px) !important; /* fuerza separación bajo header */
+  padding-top: calc(var(--h) + 24px) !important; 
   min-height:100vh;
   background:var(--bg);
   color:var(--text);
@@ -85,11 +83,10 @@ body{
 
 /* ==============================
    MEDIA: carrusel SIN RECORTES
-   (ajustado para imágenes 500x500)
 ============================== */
 .card-media{
   width:100%;
-  aspect-ratio: 1 / 1;          /* ⬅️ cuadrado para 500x500 */
+  aspect-ratio: 1 / 1;         
   background:#0f1220;
   border-radius:10px;
   overflow:hidden;
@@ -97,7 +94,6 @@ body{
   display:block;
 }
 
-/* Todo lo que renderice el carrusel ocupa la caja */
 .card-media > *{
   position:absolute;
   inset:0;
@@ -105,30 +101,26 @@ body{
   height:100%;
 }
 
-/* Swiper wrappers al 100% */
 .card-media :where(.swiper, .swiper-wrapper, .swiper-slide){
   width:100%;
   height:100%;
 }
 
-/* 🔒 Fuerza contain (sin recortes) en cualquier <img> del carrusel */
 .card-media :where(img, picture > img){
   width:100% !important;
   height:100% !important;
-  object-fit: contain !important;   /* ⬅️ clave: NO recorta */
+  object-fit: contain !important;   
   display:block;
   background:#0f1220;
   border-radius:10px;
 }
 
-/* Por si el theme del Swiper mete paddings en la slide */
 .card-media .swiper-slide{
   padding:0 !important;
 }
 
-/* Opcional: si ves bordes “comidos” por border-radius */
 .product-card{
-  overflow: visible;  /* evita que el borde de la imagen parezca recortado */
+  overflow: visible; 
 }
 
 

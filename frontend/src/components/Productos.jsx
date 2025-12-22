@@ -22,25 +22,25 @@ const PAGE_SIZE = 10;
 export default function Productos() {
   const navigate = useNavigate();
 
-  // Estado general
-  const [items, setItems] = useState([]);        // items de la página actual
-  const [total, setTotal] = useState(0);         // total de productos
-  const [page, setPage] = useState(1);           // 1-based
+ 
+  const [items, setItems] = useState([]);       
+  const [total, setTotal] = useState(0);        
+  const [page, setPage] = useState(1);         
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Para fallback de paginación en cliente
-  const [allItems, setAllItems] = useState(null); // null = modo server; [] = modo client
 
-  // Carga cada vez que cambia la página
+  const [allItems, setAllItems] = useState(null); 
+
+ 
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
       setLoading(true);
       setError("");
 
-      // 1) Intento de paginación en servidor (Spring Page<>)
+   
       try {
         const res = await fetch(
           `${API_BASE}/api/products?page=${page - 1}&size=${PAGE_SIZE}`
@@ -56,17 +56,16 @@ export default function Productos() {
             setItems(data.content);
             setTotal(data.totalElements);
             setTotalPages(Math.max(1, data.totalPages || 1));
-            setAllItems(null); // estamos en modo server
+            setAllItems(null); 
             setLoading(false);
             return;
           }
         }
-        // Si no vino como Page<>, continuamos a fallback
+
       } catch (_) {
-        // sigue al fallback
+ 
       }
 
-      // 2) Fallback: traer todo y paginar en cliente
       try {
         const data = await productsApi.getAll();
         const list = Array.isArray(data) ? data : [];
@@ -81,7 +80,7 @@ export default function Productos() {
         setItems(slice);
         setTotal(list.length);
         setTotalPages(tp);
-        if (safePage !== page) setPage(safePage); // corrige si nos pasamos
+        if (safePage !== page) setPage(safePage); 
         setLoading(false);
       } catch (_) {
         if (cancelled) return;
@@ -96,9 +95,9 @@ export default function Productos() {
     };
   }, [page]);
 
-  // Si estamos en modo cliente, recalcular página al cambiar total (por borrados/altas)
+  
   useEffect(() => {
-    if (!allItems) return; // solo en cliente
+    if (!allItems) return; 
     const tp = Math.max(1, Math.ceil(allItems.length / PAGE_SIZE));
     if (page > tp) setPage(tp);
   }, [allItems]);

@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="footer-container">
         <div className="footer-left">
           <img
-            src="/icon.png"           // 👈 usa el nombre correcto del archivo
+            src="/icon.png"           
             alt="Turmalin"
             className="footer-logo"
             onError={(e) => (e.currentTarget.style.display = "none")}

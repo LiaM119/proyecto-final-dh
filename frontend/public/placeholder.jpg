@@ -1,0 +1,11 @@
+// helper
+const API = import.meta.env.VITE_API || "http://localhost:8080";
+export function toAbsoluteUrl(u = "") {
+  if (!u) return "/placeholder.jpg";               // << local público
+  const s = u.replace(/\\/g, "/");
+  if (s.includes("placeholder.jpg")) return "/placeholder.jpg"; // << forza local
+  if (s.startsWith("http://") || s.startsWith("https://")) return s;
+  if (s.startsWith("/uploads/")) return API + s;
+  const clean = s.replace(/^\/+/, "");
+  return `${API}/uploads/${clean}`;
+}

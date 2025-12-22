@@ -45,8 +45,8 @@ export default function ProductDetail({ fetchById }) {
   const [product, setProduct] = useState(null);
   const [qty, setQty] = useState(1);
   const [error, setError] = useState("");
-  const [thumbs, setThumbs] = useState(null); // instancia del swiper de miniaturas
-  const [anim, setAnim] = useState(false);    // bloquea spam mientras anima
+  const [thumbs, setThumbs] = useState(null); 
+  const [anim, setAnim] = useState(false);   
 
   useEffect(() => {
     let alive = true;
@@ -260,3 +260,4 @@ export default function ProductDetail({ fetchById }) {
     </div>
   );
 }
+

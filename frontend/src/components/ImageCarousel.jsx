@@ -7,7 +7,7 @@ export default function ImageCarousel({ images = [] }) {
 
   const prev = useCallback(
     (e) => {
-      e.stopPropagation(); // evita abrir detalle
+      e.stopPropagation(); 
       setIdx((i) => (i - 1 + images.length) % images.length);
     },
     [images.length]
@@ -15,10 +15,10 @@ export default function ImageCarousel({ images = [] }) {
 
   const next = useCallback(
     (e) => {
-      e.stopPropagation(); // evita abrir detalle
+      e.stopPropagation(); 
       setIdx((i) => (i + 1) % images.length);
     },
-    [images.length]
+    [images.length] 
   );
 
   useEffect(() => {
@@ -70,7 +70,7 @@ export default function ImageCarousel({ images = [] }) {
               key={u + 1}
               className={`ic-thumb ${i === idx ? "is-active" : ""}`}
               onClick={(e) => {
-                e.stopPropagation(); // evita abrir detalle
+                e.stopPropagation(); 
                 setIdx(i);
               }}
             >

@@ -1,176 +1,296 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { productsApi } from "../../api/products";
-import "../../styles/AddProduct.css";
+import CategorySelect from "../../components/CategorySelect";
+import "../../styles/AdminPanel.css";
+
+/* BASE para convertir rutas relativas de imágenes a absolutas */
+const API_BASE = import.meta.env.VITE_API || "http://localhost:8080";
+const toAbsoluteUrl = (u = "") => {
+  if (!u) return "";
+  const s = u.replace(/\\/g, "/");
+  if (s.startsWith("http://") || s.startsWith("https://")) return s;
+  if (s.startsWith("/uploads/")) return API_BASE + s;
+  const clean = s.replace(/^\/+/, "");
+  return `${API_BASE}/uploads/${clean}`;
+};
+
+const emptyForm = {
+  id: null,
+  name: "",
+  description: "",
+  price: 0,
+  stock: 0,
+  imageUrls: [],
+  categoryId: null,
+  categoryName: "",
+};
 
 export default function AddProduct() {
-  const nav = useNavigate();
+  const navigate = useNavigate();
+  const params = useParams();
+  const [search] = useSearchParams();
+  const routeId = params?.id || search.get("id");
 
-  const [form, setForm] = useState({
-    name: "",
-    description: "",
-    price: "",
-    stock: "",
-    category: "",
-  });
-  const [images, setImages] = useState([]); // Array<File>
-  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState(emptyForm);
+  const [loading, setLoading] = useState(!!routeId);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  function onChange(e) {
-    const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
-  }
+  const [files, setFiles] = useState([]); 
+  const [previews, setPreviews] = useState([]); 
 
-  // Selecciona VARIAS a la vez (Ctrl/Shift)
-  function onPickImages(e) {
-    const picked = Array.from(e.target.files || []);
-    setImages(picked);
-    e.target.value = null; // permite volver a elegir lo mismo
-  }
+  useEffect(() => {
+    if (!routeId) return;
+    let alive = true;
+    (async () => {
+      try {
+        setLoading(true);
+        const p = await productsApi.getById(routeId);
+        if (!alive) return;
 
-  async function onSubmit(e) {
+        const catId = p.categoryId ?? p.category?.id ?? null;
+        const catName =
+          p.category?.name ??
+          p.categoryName ??
+          (typeof p.category === "string" ? p.category : "") ??
+          "";
+
+        setForm({
+          id: p.id ?? null,
+          name: p.name || "",
+          description: p.description || "",
+          price: Number(p.price ?? 0),
+          stock: Number(p.stock ?? 0),
+          imageUrls: Array.isArray(p.imageUrls) ? p.imageUrls : [],
+          categoryId: catId,
+          categoryName: catName,
+        });
+      } catch (e) {
+        console.error(e);
+        setError("No se pudo cargar el producto.");
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [routeId]);
+
+  useEffect(() => {
+    return () => previews.forEach((url) => URL.revokeObjectURL(url));
+  }, [previews]);
+
+  const onPickFiles = (e) => {
+    const sel = Array.from(e.target.files || []);
+    previews.forEach((url) => URL.revokeObjectURL(url)); 
+    setFiles(sel);
+    const urls = sel.map((f) => URL.createObjectURL(f));
+    setPreviews(urls);
+  };
+
+  const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
+
+    if (!form.name.trim()) return setError("El nombre es obligatorio");
+    if (Number.isNaN(Number(form.price))) return setError("Precio inválido");
+    if (Number.isNaN(Number(form.stock))) return setError("Stock inválido");
+
     try {
-      if (!form.name.trim() || !form.description.trim()) {
-        throw new Error("Nombre y descripción son obligatorios.");
+      setSaving(true);
+      const payload = {
+        name: form.name.trim(),
+        description: form.description.trim(),
+        price: Number(form.price),
+        stock: Number(form.stock),
+        categoryId: form.categoryId ?? null,
+        files, 
+      };
+
+      if (routeId) {
+        await productsApi.updateMultipart(routeId, payload);
+      } else {
+        await productsApi.createMultipart(payload);
       }
 
-      // 👉 FormData para enviar múltiples archivos reales
-      const fd = new FormData();
-      fd.append("name", form.name.trim());
-      fd.append("description", form.description.trim());
-      fd.append("price", String(Number(form.price || 0)));
-      fd.append("stock", String(Number(form.stock || 0)));
-      fd.append("category", form.category.trim());
-      for (const file of (images ?? [])) fd.append("images", file);
-
-      await productsApi.create(fd); // fetch con body: fd (sin Content-Type manual)
-      nav("/productos");
-    } catch (err) {
-      console.error(err);
-      setError(err.message || "Error al crear el producto");
+      navigate("/administracion/productos");
+    } catch (e) {
+      console.error(e);
+      setError("No se pudo guardar el producto.");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
-  }
+  };
 
   return (
-    <main className="main container add-product-page" style={{ maxWidth: 720 }}>
-      <h1>Agregar producto</h1>
+    <div className="admin-addproduct container" style={{ maxWidth: 720 }}>
+      <h1>{routeId ? "Editar producto" : "Registrar producto"}</h1>
 
-      <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
-        <label>
-          Nombre *
+      <form className="form" onSubmit={onSubmit}>
+        {error && <div className="alert error">{error}</div>}
+
+        <div className="row">
+          <label>Nombre</label>
           <input
-            name="name"
+            className="input"
             value={form.name}
-            onChange={onChange}
-            placeholder="Ej: SSD 1TB"
+            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+            disabled={saving}
+            required
           />
-        </label>
+        </div>
 
-        <label>
-          Descripción *
+        <div className="row">
+          <label>Descripción</label>
           <textarea
-            name="description"
+            className="textarea"
             rows={4}
             value={form.description}
-            onChange={onChange}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, description: e.target.value }))
+            }
+            disabled={saving}
           />
-        </label>
+        </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <label>
-            Precio
+        <div
+          className="row"
+          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}
+        >
+          <label className="row">
+            <span>Precio</span>
             <input
-              name="price"
+              className="input"
               type="number"
-              min="0"
               step="0.01"
               value={form.price}
-              onChange={onChange}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, price: e.target.value }))
+              }
+              disabled={saving}
             />
           </label>
-          <label>
-            Stock
+
+          <label className="row">
+            <span>Stock</span>
             <input
-              name="stock"
+              className="input"
               type="number"
-              min="0"
-              step="1"
               value={form.stock}
-              onChange={onChange}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, stock: e.target.value }))
+              }
+              disabled={saving}
             />
           </label>
         </div>
 
-        <label>
-          Categoría
-          <input
-            name="category"
-            value={form.category}
-            onChange={onChange}
-            placeholder="Hardware / Servicios"
+        {/* === CATEGORÍA === */}
+        <div className="row">
+          <CategorySelect
+            value={
+              form.categoryId
+                ? { id: form.categoryId, name: form.categoryName }
+                : form.categoryName
+                ? { id: null, name: form.categoryName }
+                : null
+            }
+            onChange={(cat) =>
+              setForm((f) => ({
+                ...f,
+                categoryId: cat?.id ?? null,
+                categoryName: cat?.name ?? "",
+              }))
+            }
+            disabled={loading || saving}
           />
-        </label>
+        </div>
 
-        <label>
-          Imágenes (una o varias)
-          <input type="file" name="images" accept="image/*" multiple onChange={onPickImages} />
-        </label>
+        {/* Imágenes actuales (solo en edición) */}
+        {routeId &&
+          Array.isArray(form.imageUrls) &&
+          form.imageUrls.length > 0 && (
+            <div className="row">
+              <label>Imágenes actuales</label>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(90px,1fr))",
+                  gap: 8,
+                }}
+              >
+                {form.imageUrls.map((src, i) => (
+                  <img
+                    key={i}
+                    src={toAbsoluteUrl(src)}
+                    alt={`img-${i}`}
+                    style={{
+                      width: "100%",
+                      height: 80,
+                      objectFit: "cover",
+                      borderRadius: 8,
+                      border: "1px solid #2a2f45",
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
-        {images.length > 0 && (
-          <>
-            <p style={{ marginTop: 8 }}>Seleccionadas: {images.length}</p>
+        {/* Subir nuevas imágenes */}
+        <div className="row">
+          <label>Nuevas imágenes (opcional)</label>
+          <input
+            className="input-file"
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={onPickFiles}
+            disabled={saving}
+          />
+          {previews.length > 0 && (
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))",
+                gridTemplateColumns: "repeat(auto-fill, minmax(90px,1fr))",
                 gap: 8,
                 marginTop: 8,
               }}
             >
-              {images.map((f) => {
-                const src = URL.createObjectURL(f);
-                return (
-                  <img
-                    key={`${f.name}-${f.size}-${f.lastModified}`}
-                    src={src}
-                    alt={f.name}
-                    style={{
-                      width: "100%",
-                      height: 100,
-                      objectFit: "cover",
-                      borderRadius: 8,
-                    }}
-                    onLoad={(e) => URL.revokeObjectURL(e.currentTarget.src)}
-                  />
-                );
-              })}
-            </div>
-
-            <ul style={{ marginTop: 8 }}>
-              {images.map((f) => (
-                <li key={`name-${f.name}-${f.lastModified}`}>
-                  {f.name} ({Math.round(f.size / 1024)} KB)
-                </li>
+              {previews.map((src, i) => (
+                <img
+                  key={i}
+                  src={src}
+                  alt={`prev-${i}`}
+                  style={{
+                    width: "100%",
+                    height: 80,
+                    objectFit: "cover",
+                    borderRadius: 8,
+                    border: "1px solid #2a2f45",
+                  }}
+                />
               ))}
-            </ul>
-          </>
-        )}
+            </div>
+          )}
+        </div>
 
-        {error && <p style={{ color: "#f55" }}>{error}</p>}
-
-        <div style={{ display: "flex", gap: 8 }}>
-          <button type="button" onClick={() => nav(-1)}>Cancelar</button>
-          <button type="submit" disabled={loading}>
-            {loading ? "Guardando..." : "Guardar Producto"}
+        <div className="actions" style={{ marginTop: 12 }}>
+          <button type="submit" className="btn" disabled={saving}>
+            {saving ? "Guardando..." : routeId ? "Guardar cambios" : "Crear"}
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => navigate(-1)}
+            disabled={saving}
+          >
+            Cancelar
           </button>
         </div>
       </form>
-    </main>
+    </div>
   );
 }

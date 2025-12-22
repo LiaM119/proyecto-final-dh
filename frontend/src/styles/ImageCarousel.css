@@ -16,9 +16,9 @@
 .ic-thumb.is-active {border-color: #7aa2ff;}
 .ic-empty {color: #888; font-size: 14px;}
 .ic-thumb.is-active img {
-  box-shadow: 0 0 0 2px #7aa2ff; /* borde celeste más fino */
+  box-shadow: 0 0 0 2px #7aa2ff; 
 }
 
 .ic-thumbs::-webkit-scrollbar {
-  display: none;           /* Chrome, Safari, Edge */
+  display: none;        
 }
