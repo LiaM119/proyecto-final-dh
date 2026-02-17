@@ -33,7 +33,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
-        // Si no hay header o no empieza con Bearer, seguimos sin autenticar
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -42,17 +41,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
 
         try {
-            String email = jwtUtil.getSubject(token); // subject = email
+            String email = jwtUtil.getSubject(token);
 
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                // Cargamos el usuario desde la base
                 Optional<User> optUser = userRepository.findByEmail(email);
 
                 if (optUser.isPresent()) {
                     User user = optUser.get();
-
-                    // ESTE PUNTO ES LA CLAVE:
-                    // usamos getAuthorities() del User (ROLE_USER / ROLE_ADMIN)
                     UsernamePasswordAuthenticationToken authToken =
                             new UsernamePasswordAuthenticationToken(
                                     user,
@@ -69,8 +64,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
 
         } catch (Exception e) {
-            // Si el token es inválido/expira, no seteamos autenticación
-            // y dejamos que el filtro siguiente maneje el 401/403
             System.out.println("JWT inválido: " + e.getMessage());
         }
 

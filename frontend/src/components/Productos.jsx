@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { productsApi } from "../api/products";
 import "../styles/Productos.css";
 import ImageCarousel from "./ImageCarousel";
+import FavoriteButton from "./FavoriteButton";
+import ShareButton from "./ShareButton";
 import { useNavigate } from "react-router-dom";
 
-/* BASE única */
 const API_BASE = import.meta.env.VITE_API || "http://localhost:8080";
 
-/* Normalizador de URLs */
 const toAbsoluteUrl = (u = "") => {
   if (!u) return "";
   const s = u.replace(/\\/g, "/");
@@ -22,29 +22,27 @@ const PAGE_SIZE = 10;
 export default function Productos() {
   const navigate = useNavigate();
 
- 
-  const [items, setItems] = useState([]);       
-  const [total, setTotal] = useState(0);        
-  const [page, setPage] = useState(1);         
+  const [items, setItems] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [allItems, setAllItems] = useState(null);
 
-  const [allItems, setAllItems] = useState(null); 
-
- 
   useEffect(() => {
     let cancelled = false;
+
     const load = async () => {
       setLoading(true);
       setError("");
 
-   
       try {
         const res = await fetch(
           `${API_BASE}/api/products?page=${page - 1}&size=${PAGE_SIZE}`
         );
+
         if (res.ok) {
           const data = await res.json();
           if (
@@ -56,14 +54,13 @@ export default function Productos() {
             setItems(data.content);
             setTotal(data.totalElements);
             setTotalPages(Math.max(1, data.totalPages || 1));
-            setAllItems(null); 
+            setAllItems(null);
             setLoading(false);
             return;
           }
         }
-
       } catch (_) {
- 
+
       }
 
       try {
@@ -80,7 +77,7 @@ export default function Productos() {
         setItems(slice);
         setTotal(list.length);
         setTotalPages(tp);
-        if (safePage !== page) setPage(safePage); 
+        if (safePage !== page) setPage(safePage);
         setLoading(false);
       } catch (_) {
         if (cancelled) return;
@@ -95,12 +92,11 @@ export default function Productos() {
     };
   }, [page]);
 
-  
   useEffect(() => {
-    if (!allItems) return; 
+    if (!allItems) return;
     const tp = Math.max(1, Math.ceil(allItems.length / PAGE_SIZE));
     if (page > tp) setPage(tp);
-  }, [allItems]);
+  }, [allItems, page]);
 
   const goFirst = () => setPage(1);
   const goPrev = () => setPage((p) => Math.max(1, p - 1));
@@ -142,20 +138,47 @@ export default function Productos() {
           const raw = p?.imageUrls ?? p?.imagesUrls ?? [];
           const imgs = raw.map(toAbsoluteUrl).filter(Boolean);
 
+          const goDetail = () =>
+            navigate(`/productos/${p.id}`, { state: { product: p } });
+
           return (
             <article
               key={p.id}
               className="product-card"
-              onClick={() =>
-                navigate(`/productos/${p.id}`, { state: { product: p } })
-              }
-              onKeyDown={(e) =>
-                e.key === "Enter"
-                  ? navigate(`/productos/${p.id}`, { state: { product: p } })
-                  : null
-              }
+              onClick={goDetail}
+              onKeyDown={(e) => (e.key === "Enter" ? goDetail() : null)}
               tabIndex={0}
             >
+              <div
+                style={{
+                  position: "absolute",
+                  top: 10,
+                  left: 10,
+                  zIndex: 6,
+                }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+              >
+                <FavoriteButton productId={p.id} />
+              </div>
+
+              <div
+                style={{
+                  position: "absolute",
+                  top: 10,
+                  right: 10,
+                  zIndex: 6,
+                }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+              >
+                <ShareButton product={p} label="Compartir" />
+              </div>
+
               <div className="card-media">
                 {imgs.length ? (
                   <ImageCarousel
@@ -210,6 +233,12 @@ export default function Productos() {
 
         <span className="page-info">
           Página <b>{page}</b> de <b>{totalPages}</b>
+          {typeof total === "number" ? (
+            <>
+              {" "}
+              • <b>{total}</b> productos
+            </>
+          ) : null}
         </span>
 
         <button

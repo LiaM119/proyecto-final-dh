@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/categories")
@@ -19,7 +20,6 @@ public class CategoryController {
         this.service = service;
     }
 
-    // 🔹 USADO POR EL DROPDOWN DEL HEADER
     @GetMapping
     public List<CategoryDTO> list() {
         return service.list();
@@ -45,9 +45,18 @@ public class CategoryController {
         return service.update(id, dto);
     }
 
+    // ✅ NUEVO: contar productos asociados (para mostrar warning en el modal)
+    @GetMapping("/{id}/product-count")
+    public Map<String, Object> productCount(@PathVariable Long id) {
+        return service.productCount(id);
+    }
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        service.delete(id);
+    public ResponseEntity<Void> delete(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "false") boolean force
+    ) {
+        service.delete(id, force);
         return ResponseEntity.noContent().build();
     }
 }

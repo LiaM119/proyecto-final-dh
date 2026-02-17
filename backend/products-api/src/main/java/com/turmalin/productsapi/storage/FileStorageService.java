@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Service
 public class FileStorageService {
-    private final Path root = Paths.get("uploads"); // crea products-api/uploads
+    private final Path root = Paths.get("uploads");
 
     @PostConstruct
     public void init() throws IOException {
@@ -30,6 +30,6 @@ public class FileStorageService {
         String filename = UUID.randomUUID() + ext;
         Files.copy(file.getInputStream(), root.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
 
-        return "/uploads/" + filename;  // <-- esto queda guardado en imageUrls
+        return "/uploads/" + filename;
     }
 }

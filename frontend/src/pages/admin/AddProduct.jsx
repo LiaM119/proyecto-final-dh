@@ -4,7 +4,6 @@ import { productsApi } from "../../api/products";
 import CategorySelect from "../../components/CategorySelect";
 import "../../styles/AdminPanel.css";
 
-/* BASE para convertir rutas relativas de imágenes a absolutas */
 const API_BASE = import.meta.env.VITE_API || "http://localhost:8080";
 const toAbsoluteUrl = (u = "") => {
   if (!u) return "";
@@ -187,7 +186,6 @@ export default function AddProduct() {
           </label>
         </div>
 
-        {/* === CATEGORÍA === */}
         <div className="row">
           <CategorySelect
             value={
@@ -208,7 +206,6 @@ export default function AddProduct() {
           />
         </div>
 
-        {/* Imágenes actuales (solo en edición) */}
         {routeId &&
           Array.isArray(form.imageUrls) &&
           form.imageUrls.length > 0 && (
@@ -239,7 +236,6 @@ export default function AddProduct() {
             </div>
           )}
 
-        {/* Subir nuevas imágenes */}
         <div className="row">
           <label>Nuevas imágenes (opcional)</label>
           <input

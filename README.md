@@ -106,3 +106,95 @@ proyecto-final-dh/
 - **Backend:** Spring Boot + Maven + H2 (o MySQL en despliegue).  
 - **Endpoints:** `/api/products`, `/api/products/{id}`, `/api/products/check-name`.  
 - **Control de versiones:** Git con ramas dedicadas (por ejemplo, `carrousel-home`, `panel-admin`, etc.).  
+
+
+# 🟣 Sprint 3 — Documentación Oficial
+## Proyecto: Turmalin
+
+---
+
+## 🧩 01. Documentación / Bitácora  
+**Rol:** Scrum Master  
+
+---
+
+### 📌 Contexto del Sprint  
+
+El Sprint 3 tuvo como objetivo consolidar la arquitectura del proyecto Turmalin, estabilizar la integración entre frontend y backend, mejorar validaciones y reforzar la estructura del repositorio para garantizar escalabilidad futura.
+
+---
+
+### 🎯 Objetivos del Sprint 3  
+
+- Consolidar la integración cliente-servidor.
+- Optimizar el ABM de productos y categorías.
+- Mejorar manejo de errores HTTP en frontend.
+- Validar consumo correcto de endpoints REST.
+- Estabilizar estructura modular del backend.
+- Preparar la base para módulos futuros (reservas, autenticación avanzada, dashboard).
+
+---
+
+### 💡 Funcionalidades trabajadas en este Sprint  
+
+- Integración completa entre React y Spring Boot mediante API REST.
+- Validaciones en formularios administrativos.
+- Manejo correcto de respuestas JSON.
+- Control de errores en frontend ante fallas del backend.
+- Mejora en organización de paquetes del backend (`config`, `product`, `auth`, `storage`, etc.).
+- Optimización visual manteniendo identidad de marca.
+- Estructura preparada para escalabilidad futura.
+
+---
+
+## 🧪 02. Planificación y Ejecución de Tests  
+**Rol:** Team Leader Testing  
+
+---
+
+### 🔎 Alcance de pruebas  
+
+Se realizaron pruebas funcionales sobre:
+
+- Endpoints REST del backend.
+- Flujo completo de ABM de productos.
+- Visualización de detalle en frontend.
+- Integración entre frontend y backend.
+- Manejo de errores ante respuestas HTTP incorrectas.
+
+---
+
+### 🛠 Herramientas utilizadas  
+
+- Postman (verificación de endpoints REST).
+- Navegador (Chrome) para pruebas de interfaz.
+- Consola del navegador para validación de respuestas HTTP.
+- Logs del backend en entorno local.
+
+---
+
+### ✅ Resultados  
+
+- Los endpoints `/api/products` y `/api/products/{id}` responden correctamente.
+- Las operaciones de creación y eliminación impactan correctamente en base de datos.
+- El frontend consume adecuadamente la API.
+- Los errores del servidor son detectados y gestionados.
+- No se detectaron fallas críticas en el flujo principal.
+
+---
+
+## 🗂 03. Actualización del Repositorio  
+**Roles involucrados:** TL Frontend – TL Backend – TL BBDD – TL Infra  
+
+---
+
+### 📂 Repositorio público  
+
+El código correspondiente al Sprint 3 se encuentra disponible en:
+
+👉 https://github.com/LiamRomero/proyecto-final-dh  
+
+---
+
+### 🏗 Estructura actual del proyecto  
+

@@ -40,7 +40,6 @@ public class ProductController {
     @GetMapping
     public List<ProductDTO> list() { return service.findAll(); }
 
-    // ===== CREATE (multipart) =====
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> create(
             @RequestParam("name") String name,
@@ -60,7 +59,6 @@ public class ProductController {
         }
     }
 
-    // ===== UPDATE (multipart) =====
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> update(
             @PathVariable Long id,

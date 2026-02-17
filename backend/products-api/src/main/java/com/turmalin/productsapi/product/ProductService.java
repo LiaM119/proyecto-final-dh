@@ -79,7 +79,7 @@ public class ProductService {
             BigDecimal price,
             Integer stock,
             Long categoryId,
-            List<MultipartFile> images // opcional: reemplaza/añade
+            List<MultipartFile> images
     ) throws IOException {
 
         Product p = repo.findById(id)

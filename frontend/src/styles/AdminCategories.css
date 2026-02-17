@@ -1,0 +1,127 @@
+/* src/styles/AdminCategories.css */
+
+.admin-cats{
+  padding: 14px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 16px;
+}
+
+.admin-cats__head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.admin-muted{ opacity: .75; }
+.admin-error{ color:#ff6b6b; margin-top: 10px; }
+
+.admin-table{
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.admin-row{
+  display:grid;
+  grid-template-columns: 120px 1fr 200px;
+  gap: 10px;
+  padding: 12px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  align-items:center;
+}
+
+.admin-row--head{
+  border-top:none;
+  background: rgba(0,0,0,.25);
+  font-weight: 700;
+}
+
+.admin-right{ display:flex; justify-content:flex-end; }
+.admin-mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New"; }
+
+.admin-btn{
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: #e7e9ff;
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor:pointer;
+}
+.admin-btn:disabled{ opacity:.6; cursor:not-allowed; }
+
+.admin-btn--danger{
+  border-color: rgba(255,107,107,.35);
+  background: rgba(255,107,107,.12);
+}
+
+.admin-modal-backdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 20px;
+  z-index: 9999;
+}
+
+.admin-modal{
+  width: min(560px, 100%);
+  background: #111528;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+}
+
+.admin-modal__title{
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.admin-modal__text{
+  margin: 0 0 10px;
+  opacity: .95;
+}
+
+.admin-warn{
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  padding: 10px 12px;
+  border-radius: 14px;
+  margin-bottom: 12px;
+}
+
+.admin-check{
+  display:flex;
+  gap: 10px;
+  align-items:center;
+  margin: 8px 0 0;
+}
+
+.admin-modal__actions{
+  display:flex;
+  justify-content:flex-end;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.admin-modal input[type="text"],
+.admin-modal input[type="email"],
+.admin-modal input[type="password"],
+.admin-modal textarea{
+  width: 100%;
+  min-height: 40px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color: #e7e9ff;
+  outline: none;
+}
+
+.admin-modal textarea{ min-height: 88px; resize: vertical; }

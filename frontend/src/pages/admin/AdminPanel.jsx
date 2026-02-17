@@ -24,7 +24,6 @@ export default function AdminPanel() {
 
   return (
     <div className="ap-panel">
-      {/* Sidebar */}
       <aside className="ap-sidebar">
         <div className="ap-brand">
           <span className="ap-dot" />
@@ -42,29 +41,26 @@ export default function AdminPanel() {
         </div>
       </aside>
 
-      {/* Área de trabajo */}
       <main className="ap-content">
         <header className="ap-toolbar">
           <h3>Panel de Administración</h3>
 
-          {/* BOTONES PRINCIPALES */}
           <div className="ap-actions">
-
-            {/* Ir a productos */}
             <Link to="/administracion/productos" className="ap-chip">
               Productos
             </Link>
 
-            {/* Ir a usuarios (acá gestionás roles/admin) */}
+            <Link to="/administracion/categorias" className="ap-chip">
+              Categorías
+            </Link>
+
             <Link to="/administracion/usuarios" className="ap-chip">
               Usuarios
             </Link>
 
-            {/* Ir a reservas (cuando exista la página) */}
             <Link to="/administracion/reservas" className="ap-chip">
               Reservas
             </Link>
-
           </div>
         </header>
 

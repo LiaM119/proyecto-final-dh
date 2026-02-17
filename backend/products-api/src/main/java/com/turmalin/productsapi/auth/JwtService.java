@@ -24,7 +24,6 @@ public class JwtService {
         this.expirationMs = expirationMs;
     }
 
-    // ====== GENERAR TOKEN ======
     public String generate(String subject, Map<String, Object> claims) {
         long now = System.currentTimeMillis();
         return Jwts.builder()
@@ -36,7 +35,6 @@ public class JwtService {
                 .compact();
     }
 
-    // ====== OBTENER SUBJECT (EMAIL/USERNAME) ======
     public String getSubject(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -46,12 +44,10 @@ public class JwtService {
                 .getSubject();
     }
 
-    // 👉 ESTE LO USA EL JwtAuthFilter
     public String extractUsername(String token) {
         return getSubject(token);
     }
 
-    // 👉 Y ESTE TAMBIÉN LO USA EL JwtAuthFilter
     public boolean isTokenValid(String token, UserDetails userDetails) {
         try {
             Claims claims = Jwts.parserBuilder()

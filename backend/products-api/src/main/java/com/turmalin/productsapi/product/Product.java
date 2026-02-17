@@ -42,7 +42,6 @@ public class Product {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    // ===== Getters / Setters =====
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -64,7 +63,6 @@ public class Product {
     public Category getCategory() { return category; }
     public void setCategory(Category category) { this.category = category; }
 
-    // helper
     public void addImage(String url) {
         if (this.imageUrls == null) this.imageUrls = new ArrayList<>();
         this.imageUrls.add(url);

@@ -1,6 +1,3 @@
-/* ==============================
-   BASE
-============================== */
 :root{
   --h: 64px;           
   --brand:#6d5ef3;
@@ -12,9 +9,6 @@
 
 html { scroll-padding-top: var(--h); }
 
-/* ==============================
-   CONTENEDOR GENERAL 
-============================== */
 body{
   margin:0;
   background:var(--bg);
@@ -38,9 +32,6 @@ body{
   display:block;
 }
 
-/* ==============================
-   HEADER DE SECCIÓN
-============================== */
 .products-header{
   display:flex;
   justify-content:space-between;
@@ -52,18 +43,12 @@ body{
   line-height:1.1;
 }
 
-/* ==============================
-   GRID
-============================== */
 .grid{
   display:grid;
   gap:20px;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
 }
 
-/* ==============================
-   CARD
-============================== */
 .product-card{
   background:var(--surface);
   border:1px solid var(--line);
@@ -81,9 +66,6 @@ body{
   box-shadow:0 6px 16px rgba(0,0,0,.35);
 }
 
-/* ==============================
-   MEDIA: carrusel SIN RECORTES
-============================== */
 .card-media{
   width:100%;
   aspect-ratio: 1 / 1;         
@@ -123,10 +105,6 @@ body{
   overflow: visible; 
 }
 
-
-/* ==============================
-   TEXTO Y META
-============================== */
 .product-title{
   margin:4px 0 0;
   font-size:1.05rem;
@@ -149,9 +127,6 @@ body{
 }
 .product-meta span{ opacity:.8; }
 
-/* ==============================
-   BOTÓN
-============================== */
 .addProductButton{
   padding:8px 12px;
   border-radius:8px;
@@ -163,9 +138,6 @@ body{
 }
 .addProductButton:hover{ background:var(--brand); color:#fff; }
 
-/* ==============================
-   PAGINADOR
-============================== */
 .paginator{
   display:flex;
   align-items:center;
@@ -194,9 +166,6 @@ body{
 }
 .page-info{ margin:0 6px; opacity:.9; }
 
-/* ==============================
-   RESPONSIVE
-============================== */
 @media (max-width: 992px){
   .products-page{ padding-top: calc(var(--h) + 16px) !important; }
   .container{ padding:0 16px 40px; }

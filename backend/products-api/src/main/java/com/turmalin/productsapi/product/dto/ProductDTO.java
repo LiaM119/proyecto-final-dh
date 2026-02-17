@@ -10,13 +10,12 @@ public class ProductDTO {
     private String description;
     private BigDecimal price;
     private Integer stock;
-    private List<String> imageUrls;  // rutas/URLs de las imágenes
+    private List<String> imageUrls;
 
     // Categoría (nuevo)
-    private Long categoryId;     // para asignar desde el frontend
-    private String categoryName; // lectura cómoda
+    private Long categoryId;
+    private String categoryName;
 
-    // ===== Getters / Setters =====
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

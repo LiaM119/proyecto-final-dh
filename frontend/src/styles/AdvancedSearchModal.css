@@ -1,0 +1,55 @@
+.no-scroll { overflow: hidden; }
+
+.advModal, .advModal * { box-sizing: border-box; }
+
+.advModal{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(10px);
+  z-index: 20000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.advModal__panel{
+  width: min(1100px, 96vw);
+  max-height: min(86vh, 900px);
+  overflow: auto;
+  border-radius: 18px;
+  border: 1px solid rgba(109,94,243,.28);
+  background: #0b0d16;
+  box-shadow: 0 30px 90px rgba(0,0,0,.65);
+  padding: 14px;
+}
+
+.advModal__top{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.advModal__title{
+  margin: 0;
+  font-size: 18px;
+  color: rgba(233,235,255,.92);
+  font-weight: 750;
+}
+
+.advModal__close{
+  border: 1px solid rgba(255,255,255,.12);
+  background: transparent;
+  color: rgba(233,235,255,.92);
+  width: 38px; 
+  height: 38px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.advModal__close:hover{
+  border-color: rgba(109,94,243,.55);
+}

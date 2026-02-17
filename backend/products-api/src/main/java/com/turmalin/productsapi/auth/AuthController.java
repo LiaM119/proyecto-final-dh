@@ -19,7 +19,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin // deja que llame el front
+@CrossOrigin
 public class AuthController {
 
     private final AuthenticationManager am;
@@ -47,9 +47,9 @@ public class AuthController {
                     .firstName("Demo")
                     .lastName("Admin")
                     .email("demo@demo.com")
-                    .password(encoder.encode("demo123")) // pass demo123
+                    .password(encoder.encode("demo123"))
                     .admin(true)
-                    .role(User.Role.ADMIN)               // 👈 IMPORTANTE
+                    .role(User.Role.ADMIN)
                     .build();
             repo.save(u);
             System.out.println(">>> Usuario demo@demo.com creado como ADMIN (pass: demo123)");
@@ -57,7 +57,6 @@ public class AuthController {
     }
 
 
-    // ================== LOGIN ==================
     @PostMapping("/login")
     public AuthResponse login(@RequestBody LoginDTO req) {
 
@@ -78,7 +77,6 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(email, password)
             );
 
-            // Usuario encontrado y password OK
             User u = repo.findByEmail(email).orElseThrow();
 
             String token = jwt.generate(
@@ -96,7 +94,6 @@ public class AuthController {
             );
 
         } catch (BadCredentialsException e) {
-            // credenciales incorrectas → 401
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
                     "Correo o contraseña incorrectos"
@@ -104,7 +101,6 @@ public class AuthController {
         }
     }
 
-    // ================== REGISTER ==================
     @PostMapping("/register")
     public AuthResponse register(@RequestBody RegisterDTO req) {
 
@@ -122,7 +118,7 @@ public class AuthController {
                 .lastName(req.getLastName())
                 .email(req.getEmail())
                 .password(encoder.encode(req.getPassword()))
-                .admin(false)          // nuevos = usuario normal
+                .admin(false)
                 .build();
 
         repo.save(u);
@@ -142,7 +138,6 @@ public class AuthController {
         );
     }
 
-    // ================== /me ==================
     @GetMapping("/me")
     public UserView me(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");

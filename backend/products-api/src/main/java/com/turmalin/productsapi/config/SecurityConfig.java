@@ -1,113 +1,78 @@
-// src/main/java/com/turmalin/productsapi/config/SecurityConfig.java
 package com.turmalin.productsapi.config;
 
 import com.turmalin.productsapi.auth.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final AuthenticationProvider authenticationProvider;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+    public SecurityConfig(
+            JwtAuthFilter jwtAuthFilter,
+            AuthenticationProvider authenticationProvider
+    ) {
         this.jwtAuthFilter = jwtAuthFilter;
-    }
-
-    // IGNORAR COMPLETAMENTE LA CONSOLA H2
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().requestMatchers("/h2/**");
+        this.authenticationProvider = authenticationProvider;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                .cors(Customizer.withDefaults())
 
-        // Desactivamos CSRF
-        http.csrf(csrf -> csrf.disable());
+                .csrf(csrf -> csrf.disable())
 
-        // Permitir iframes (necesario para H2)
-        http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
+                .sessionManagement(sm ->
+                        sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
 
-        // Sesión stateless para JWT
-        http.sessionManagement(sm ->
-                sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        );
+                .authenticationProvider(authenticationProvider)
 
-        // CORS
-        http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
 
-        // Autorizaciones
-        http.authorizeHttpRequests(auth -> auth
-                // ENDPOINTS PÚBLICOS (APIs y recursos estáticos)
-                .requestMatchers(
-                        "/auth/**",
-                        "/api/auth/**",
-                        "/products/**",
-                        "/api/products/**",
-                        "/images/**",
-                        "/api/images/**",
-                        "/uploads/**",        // 👈 imágenes subidas (file:./uploads/)
-                        "/placeholder.jpg"    // 👈 tu imagen de placeholder si la usás en raíz
-                ).permitAll()
+                .authorizeHttpRequests(auth -> auth
 
-                // ENDPOINTS /admin/**: requieren estar autenticado,
-                // la verificación de admin se hace en los controllers
-                .requestMatchers("/admin/**", "/api/admin/**").authenticated()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                // Todo lo demás requiere estar autenticado
-                .anyRequest().authenticated()
-        );
+                        .requestMatchers("/auth/**").permitAll()
 
-        // Filtro JWT
-        http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                        .requestMatchers("/uploads/**").permitAll()
+
+                        .requestMatchers("/api/reservables/**").permitAll()
+
+                        .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/categories/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/categories/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/categories/**").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/products/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/api/products/*/reviews").permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/api/products/*/reviews").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/products/*/reviews/**").authenticated()
+
+                        .requestMatchers("/api/favorites/**").authenticated()
+
+                        .anyRequest().authenticated()
+                );
 
         return http.build();
     }
-
-    // Configuración de CORS
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-
-        return source;
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-        return configuration.getAuthenticationManager();
-    }
 }
-
 

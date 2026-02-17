@@ -9,6 +9,7 @@ import "swiper/css/navigation";
 import "swiper/css/effect-coverflow";
 
 export default function Home() {
+
   useEffect(() => {
     const cards = document.querySelectorAll(".why-card");
     const obs = new IntersectionObserver(
@@ -35,7 +36,9 @@ export default function Home() {
     const duration = 900;
     let startTime = null;
 
-    const easing = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+    const easing = (t) =>
+      t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
     const step = (now) => {
       if (!startTime) startTime = now;
       const p = Math.min((now - startTime) / duration, 1);
@@ -45,7 +48,6 @@ export default function Home() {
     requestAnimationFrame(step);
   };
 
-  // ---- Productos ----
   const [raw, setRaw] = useState([]);
   const products = useMemo(() => (Array.isArray(raw) ? raw : []), [raw]);
   const navigate = useNavigate();
@@ -55,8 +57,14 @@ export default function Home() {
       try {
         const r = await fetch("http://localhost:8080/api/products");
         const j = await r.json();
-        const list = Array.isArray(j) ? j : Array.isArray(j?.content) ? j.content : [];
+        const list = Array.isArray(j)
+          ? j
+          : Array.isArray(j?.content)
+          ? j.content
+          : [];
+
         if (!list.length) throw new Error("No hay productos");
+
         const shuffled = [...list].sort(() => Math.random() - 0.5).slice(0, 10);
         setRaw(shuffled);
       } catch {
@@ -133,7 +141,13 @@ export default function Home() {
             <Swiper
               modules={[Navigation, EffectCoverflow]}
               effect="coverflow"
-              coverflowEffect={{ rotate: 0, stretch: 0, depth: 100, modifier: 1.05, slideShadows: false }}
+              coverflowEffect={{
+                rotate: 0,
+                stretch: 0,
+                depth: 100,
+                modifier: 1.05,
+                slideShadows: false,
+              }}
               centeredSlides
               slidesPerView={"auto"}
               spaceBetween={16}
@@ -176,4 +190,3 @@ export default function Home() {
     </>
   );
 }
-

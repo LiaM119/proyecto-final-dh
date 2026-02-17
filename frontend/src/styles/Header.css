@@ -81,17 +81,12 @@
 
 .hdr__user { color: #cfd3ff; font-weight: 700; margin-right: 2px; }
 
-/* =========================
-   DROPDOWN (CLICK) acorde al header
-   ========================= */
-
 .hdr__dropdown {
   position: relative;
   display: inline-flex;
   align-items: center;
 }
 
-/* Botón Productos con look de link */
 .hdr__link--btn {
   appearance: none;
   -webkit-appearance: none;
@@ -102,16 +97,13 @@
   color: inherit;
 }
 
-/* Estado abierto */
 .hdr__link--btn.is-open {
   background: rgba(109, 94, 243, 0.14);
   outline: 1px solid rgba(109, 94, 243, 0.25);
 }
 
-/* caret */
 .hdr__caret { opacity: .85; transform: translateY(1px); }
 
-/* Menú */
 .hdr__menu {
   position: absolute;
   top: calc(100% + 10px);
@@ -150,7 +142,6 @@
   margin: 6px 0;
 }
 
-/* Mobile */
 @media (max-width: 720px) {
   :root { --hdr-h: 58px; }
   .hdr__inner { padding: 0 12px; }

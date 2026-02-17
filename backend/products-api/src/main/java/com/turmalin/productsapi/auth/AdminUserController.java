@@ -21,8 +21,6 @@ public class AdminUserController {
         this.repo = repo;
     }
 
-    // -------- Helpers --------
-
     private User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
@@ -42,7 +40,6 @@ public class AdminUserController {
         }
     }
 
-    // 1) Listar todos los usuarios
     @GetMapping
     public List<UserView> listAll() {
         ensureAdmin();
@@ -53,10 +50,8 @@ public class AdminUserController {
                 .toList();
     }
 
-    // DTO simple para recibir el nuevo valor de admin
     public record AdminUpdateDTO(boolean admin) {}
 
-    // 2) Asignar / quitar admin a un usuario concreto
     @PatchMapping("/{id}/admin")
     public UserView updateAdmin(@PathVariable Long id,
                                 @RequestBody AdminUpdateDTO body) {
@@ -70,7 +65,6 @@ public class AdminUserController {
 
         boolean newAdmin = body.admin();
 
-        // actualizamos flags y rol
         u.setAdmin(newAdmin);
         u.setRole(newAdmin ? User.Role.ADMIN : User.Role.USER);
 

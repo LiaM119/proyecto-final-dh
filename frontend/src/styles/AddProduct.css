@@ -98,7 +98,6 @@
   --error: #f55;
 }
 
-/* contenedor más angosto */
 .add-product-page.main.container {
   background: var(--surface);
   color: var(--text);

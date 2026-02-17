@@ -3,16 +3,23 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Thumbs, FreeMode } from "swiper/modules";
+import { DayPicker } from "react-day-picker";
+import ShareButton from "../components/ShareButton";
+import ReviewsSections from "./ReviewsSections";
+
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/free-mode";
 import "swiper/css/thumbs";
+import "react-day-picker/style.css";
+
 import "../styles/ProductDetail.css";
+import "../styles/reservas.css";
 
-/* BASE del backend: usa VITE_API o localhost:8080 */
-const API_BASE = import.meta.env.VITE_API || "http://localhost:8080";
+import ProductPoliciesBlock from "./ProductPoliciesBlock";
 
-/* Fallback inline */
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080";
+
 const FALLBACK = `data:image/svg+xml;utf8,
 <svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'>
   <rect width='100%' height='100%' fill='%23111622'/>
@@ -22,11 +29,13 @@ const FALLBACK = `data:image/svg+xml;utf8,
   </text>
 </svg>`;
 
-/* Normaliza a URL absoluta */
 const toAbsoluteUrl = (u = "") => {
   if (!u) return "";
   if (u.startsWith("http://") || u.startsWith("https://") || u.startsWith("data:")) return u;
-  if (u.startsWith("/uploads/")) return API_BASE + u;
+
+  if (u.startsWith("/uploads/")) return `${API_BASE}${u}`;
+  if (u.startsWith("uploads/")) return `${API_BASE}/${u}`;
+
   const clean = u.replace(/^\/+/, "");
   return `${API_BASE}/uploads/${clean}`;
 };
@@ -38,6 +47,40 @@ const money = (n) =>
     maximumFractionDigits: 0,
   }).format(n ?? 0);
 
+function toISO(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+function addDays(date, days) {
+  const copy = new Date(date);
+  copy.setDate(copy.getDate() + days);
+  return copy;
+}
+
+async function apiFetch(path, options = {}) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+    ...options,
+  });
+
+  let data = null;
+  try {
+    data = await res.json();
+  } catch {
+
+  }
+
+  if (!res.ok) {
+    const msg = data?.message || "Error inesperado";
+    const err = new Error(msg);
+    err.status = res.status;
+    throw err;
+  }
+  return data;
+}
+
 export default function ProductDetail({ fetchById }) {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -45,31 +88,88 @@ export default function ProductDetail({ fetchById }) {
   const [product, setProduct] = useState(null);
   const [qty, setQty] = useState(1);
   const [error, setError] = useState("");
-  const [thumbs, setThumbs] = useState(null); 
-  const [anim, setAnim] = useState(false);   
+  const [thumbs, setThumbs] = useState(null);
+  const [anim, setAnim] = useState(false);
 
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        if (!fetchById) {
-          setError("No se recibió fetchById en la ruta.");
-          return;
-        }
-        const p = await fetchById(id);
-        if (alive) setProduct(p);
-      } catch (e) {
-        setError(e?.message || "No se pudo obtener el producto.");
-      }
-    })();
-    return () => { alive = false; };
-  }, [id, fetchById]);
+  const reservableId = Number(id);
+  const [range, setRange] = useState(undefined);
+  const [occLoading, setOccLoading] = useState(true);
+  const [occError, setOccError] = useState("");
+  const [occupiedSet, setOccupiedSet] = useState(new Set());
+
+  const from = useMemo(() => new Date(), []);
+  const to = useMemo(() => addDays(new Date(), 120), []);
+
+  const policies = useMemo(() => {
+    const raw = product?.policies;
+
+    const fallbackPolicies = [
+      {
+        title: "Uso adecuado",
+        description:
+          "El producto debe utilizarse únicamente para el fin para el cual fue diseñado. Un uso indebido puede provocar daños o fallas.",
+      },
+      {
+        title: "Cuidados generales",
+        description:
+          "Mantener el producto limpio y seco. Evitar la exposición prolongada al sol, humedad o temperaturas extremas.",
+      },
+      {
+        title: "Seguridad",
+        description:
+          "No permitir el uso del producto por personas no capacitadas. Ante cualquier falla, suspender su uso inmediatamente.",
+      },
+    ];
+
+    if (Array.isArray(raw) && raw.length > 0) {
+      return raw
+        .map((p) => ({
+          title: p?.title ?? p?.name ?? "Política",
+          description: p?.description ?? p?.detail ?? "",
+        }))
+        .filter((p) => p.title && p.description);
+    }
+
+    return fallbackPolicies;
+  }, [product]);
 
   const images = useMemo(() => {
-    const raw = product?.imageUrls ?? product?.imagesUrls ?? [];
-    const abs = (Array.isArray(raw) ? raw : []).map(toAbsoluteUrl).filter(Boolean);
+    const candidates = [
+      product?.imageUrls,
+      product?.imagesUrls,
+      product?.images,
+      product?.imageURL,
+      product?.imageUrl,
+      product?.image,
+      product?.thumbnail,
+      product?.mainImage,
+      product?.imagePath,
+      product?.photo,
+      product?.photos,
+    ];
+
+    let raw = candidates.find((v) => v != null);
+
+    if (typeof raw === "string") raw = [raw];
+
+    if (raw && !Array.isArray(raw) && typeof raw === "object") {
+      raw = [raw.url || raw.path || raw.src || raw.imageUrl || raw.image || raw.fileName || ""];
+    }
+
+    const abs = (Array.isArray(raw) ? raw : [])
+      .map((x) => {
+        if (typeof x === "string") return x;
+        if (x && typeof x === "object")
+          return x.url || x.path || x.src || x.imageUrl || x.image || x.fileName || "";
+        return "";
+      })
+      .map(toAbsoluteUrl)
+      .filter(Boolean);
+
     return abs.length ? abs : [FALLBACK];
   }, [product]);
+
+  const canLoop = images.length > 1;
 
   const inc = () => setQty((q) => Math.min(q + 1, product?.stock || 99));
   const dec = () => setQty((q) => Math.max(1, q - 1));
@@ -89,16 +189,94 @@ export default function ProductDetail({ fetchById }) {
     }
   };
 
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        if (!fetchById) {
+          setError("No se recibió fetchById en la ruta.");
+          return;
+        }
+        const p = await fetchById(id);
+        if (!alive) return;
+
+        setProduct(p);
+
+        console.log("PRODUCT RAW:", p);
+        console.log("PRODUCT KEYS:", p ? Object.keys(p) : []);
+      } catch (e) {
+        setError(e?.message || "No se pudo obtener el producto.");
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [id, fetchById]);
+
+  async function loadAvailability() {
+    setOccLoading(true);
+    setOccError("");
+    try {
+      const data = await apiFetch(
+        `/api/reservables/${reservableId}/availability?from=${toISO(from)}&to=${toISO(to)}`
+      );
+      const occupied = new Set((data.occupiedDates || []).map(String));
+      setOccupiedSet(occupied);
+    } catch (e) {
+      setOccError(e?.message || "No se pudo cargar la disponibilidad.");
+    } finally {
+      setOccLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!Number.isFinite(reservableId)) return;
+    loadAvailability();
+
+  }, [reservableId]);
+
+  const disabledDays = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return (day) => {
+      const d = new Date(day);
+      d.setHours(0, 0, 0, 0);
+      const key = toISO(d);
+      return d < today || occupiedSet.has(key);
+    };
+  }, [occupiedSet]);
+
+  const modifiers = useMemo(() => {
+    const occupiedDates = Array.from(occupiedSet).map((iso) => new Date(iso));
+    return { occupied: occupiedDates };
+  }, [occupiedSet]);
+
+  const modifiersStyles = useMemo(
+    () => ({
+      occupied: {
+        opacity: 0.45,
+        textDecoration: "line-through",
+        border: "1px solid rgba(255,255,255,.18)",
+      },
+    }),
+    []
+  );
+
+  function goReserve() {
+    const start = range?.from ? toISO(range.from) : null;
+    const end = range?.to ? toISO(range.to) : null;
+    if (!start || !end) return;
+
+    navigate(`/reservas?reservableId=${reservableId}&start=${start}&end=${end}`);
+  }
+
   if (error) {
     return (
       <div className="pdp container">
         <div className="pdp-top-actions">
-          <button
-            type="button"
-            className="back-btn"
-            onClick={() => navigate(-1)}
-            aria-label="Volver"
-          >
+          <button type="button" className="back-btn" onClick={() => navigate(-1)} aria-label="Volver">
             <ArrowLeft size={18} />
             <span>Volver</span>
           </button>
@@ -116,12 +294,7 @@ export default function ProductDetail({ fetchById }) {
     return (
       <div className="pdp container">
         <div className="pdp-top-actions">
-          <button
-            type="button"
-            className="back-btn"
-            onClick={() => navigate(-1)}
-            aria-label="Volver"
-          >
+          <button type="button" className="back-btn" onClick={() => navigate(-1)} aria-label="Volver">
             <ArrowLeft size={18} />
             <span>Volver</span>
           </button>
@@ -133,14 +306,8 @@ export default function ProductDetail({ fetchById }) {
 
   return (
     <div className="pdp container">
-      {/* Botón volver alineado a la derecha */}
       <div className="pdp-top-actions">
-        <button
-          type="button"
-          className="back-btn"
-          onClick={() => navigate(-1)}
-          aria-label="Volver"
-        >
+        <button type="button" className="back-btn" onClick={() => navigate(-1)} aria-label="Volver">
           <ArrowLeft size={18} />
           <span>Volver</span>
         </button>
@@ -148,15 +315,13 @@ export default function ProductDetail({ fetchById }) {
 
       {/* Galería */}
       <section className={`pdp-gallery ${anim ? "is-animating" : ""}`}>
-        {/* Swiper principal */}
         <Swiper
           className="pdp-main-swiper"
           modules={[Thumbs]}
           spaceBetween={12}
-          loop={true}
-          loopedSlides={images.length}
+          loop={canLoop}
           speed={600}
-          allowTouchMove={false}
+          allowTouchMove={canLoop}
           thumbs={{ swiper: thumbs && !thumbs.destroyed ? thumbs : null }}
           onTransitionStart={handleStartAnim}
           onTransitionEnd={handleEndAnim}
@@ -179,19 +344,17 @@ export default function ProductDetail({ fetchById }) {
           ))}
         </Swiper>
 
-        {/* Carrusel de miniaturas */}
         <Swiper
           className="pdp-thumbs-swiper"
           modules={[FreeMode, Navigation, Thumbs]}
           onSwiper={setThumbs}
           freeMode={false}
-          loop={true}
-          loopedSlides={images.length}
-          navigation={{ clickable: true }}
+          loop={canLoop}
+          navigation={canLoop ? { clickable: true } : false}
           spaceBetween={8}
-          slidesPerView={3}
+          slidesPerView={Math.min(4, images.length)}
           speed={600}
-          slideToClickedSlide={true}
+          slideToClickedSlide={canLoop}
           watchSlidesProgress={true}
           preventClicks={true}
           preventClicksPropagation={true}
@@ -200,11 +363,7 @@ export default function ProductDetail({ fetchById }) {
         >
           {images.map((src, i) => (
             <SwiperSlide key={`thumb-${i}`}>
-              <button
-                type="button"
-                className="pdp-thumb"
-                onMouseDown={(e) => e.preventDefault()}
-              >
+              <button type="button" className="pdp-thumb" onMouseDown={(e) => e.preventDefault()}>
                 <img src={src} alt={`Miniatura ${i + 1}`} loading="lazy" draggable={false} />
               </button>
             </SwiperSlide>
@@ -229,9 +388,20 @@ export default function ProductDetail({ fetchById }) {
 
         {product.description && <p className="pdp-desc">{product.description}</p>}
 
+        <div
+          style={{ display: "flex", gap: 10, margin: "10px 0 14px", flexWrap: "wrap" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <ShareButton product={product} label="Compartir" />
+        </div>
+
+        <ProductPoliciesBlock policies={policies} />
+
         <div className="pdp-actions">
           <div className="qty">
-            <button onClick={dec} aria-label="Disminuir">−</button>
+            <button onClick={dec} aria-label="Disminuir">
+              −
+            </button>
             <input
               value={qty}
               onChange={(e) => {
@@ -242,7 +412,9 @@ export default function ProductDetail({ fetchById }) {
               }}
               inputMode="numeric"
             />
-            <button onClick={inc} aria-label="Aumentar">+</button>
+            <button onClick={inc} aria-label="Aumentar">
+              +
+            </button>
           </div>
 
           <div className="cta">
@@ -256,8 +428,59 @@ export default function ProductDetail({ fetchById }) {
           <li>🛡️ Garantía oficial 12 meses</li>
           <li>💬 Soporte post-venta</li>
         </ul>
+
+        <div style={{ marginTop: 18 }}>
+          <ReviewsSections productId={id} />
+        </div>
+
+        {/* Reservas */}
+        <div style={{ marginTop: 18 }}>
+          <div className="cal">
+            <div className="cal__header">
+              <h3 style={{ margin: 0 }}>Reservar</h3>
+              <div className="cal__legend">
+                <span className="dot dot--free" /> Disponible
+                <span className="dot dot--busy" /> Ocupado
+              </div>
+            </div>
+
+            {occError && (
+              <div className="cal__error">
+                <p style={{ margin: 0 }}>❌ {occError}</p>
+                <button className="btn" onClick={loadAvailability} style={{ marginTop: 10 }}>
+                  Reintentar
+                </button>
+              </div>
+            )}
+
+            {!occError && occLoading && <p className="cal__loading">Cargando fechas…</p>}
+
+            {!occError && !occLoading && (
+              <>
+                <DayPicker
+                  mode="range"
+                  numberOfMonths={2}
+                  selected={range}
+                  onSelect={setRange}
+                  disabled={disabledDays}
+                  modifiers={modifiers}
+                  modifiersStyles={modifiersStyles}
+                  fromMonth={from}
+                />
+
+                <button
+                  className="btn btn--primary"
+                  onClick={goReserve}
+                  disabled={!range?.from || !range?.to}
+                  title={!range?.from || !range?.to ? "Seleccioná un rango" : "Ir a reservar"}
+                >
+                  Ir a reservar
+                </button>
+              </>
+            )}
+          </div>
+        </div>
       </section>
     </div>
   );
 }
-

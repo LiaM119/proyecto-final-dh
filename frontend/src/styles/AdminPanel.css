@@ -205,7 +205,6 @@
 .input-file::file-selector-button:hover{ filter: brightness(1.05); }
 .input-file::file-selector-button:active{ transform: translateY(1px); }
 
-/* ====== Modal (si querés mover de inline a CSS) ====== */
 .modal-backdrop{
   position: fixed; inset: 0; background: rgba(0,0,0,.65);
   display: flex; align-items: center; justify-content: center; z-index: 1000;
@@ -228,9 +227,6 @@
   padding:8px 12px; margin-bottom:8px; border:1px solid #8e2a2a;
 }
 
-/* ===================== */
-/*  LAYOUT DEL PANEL     */
-/* ===================== */
 .ap-panel{
   display:grid;
   grid-template-columns: 280px 1fr;
@@ -239,9 +235,6 @@
   color: var(--text, #fff);
 }
 
-/* ===================== */
-/*  SIDEBAR              */
-/* ===================== */
 .ap-sidebar{
   position: sticky; top: 64px; 
   align-self: start;
@@ -284,9 +277,6 @@
 }
 .ap-muted{ color:#8791b0; font-size:.85rem; }
 
-/* ===================== */
-/*  CONTENIDO            */
-/* ===================== */
 .ap-content{
   display:flex; flex-direction:column; gap:18px;
   padding:28px clamp(18px, 3vw, 38px);
@@ -318,9 +308,6 @@
   box-shadow: 0 12px 30px rgba(0,0,0,.35);
 }
 
-/* ===================== */
-/*  BLOQUEO MOBILE       */
-/* ===================== */
 .admin-mobile-block{
   min-height:100vh; display:grid; place-items:center;
   background:#0d0f14; color:#fff; text-align:center; padding:20px;

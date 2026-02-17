@@ -20,13 +20,11 @@ public class AppUserDetailsService implements UserDetailsService {
         User u = repo.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
-        // si tu enum es Role { USER, ADMIN }
-        String roleName = u.getRole().name(); // "USER" o "ADMIN"
+        String roleName = u.getRole().name();
 
         return org.springframework.security.core.userdetails.User
                 .withUsername(u.getEmail())
                 .password(u.getPassword())
-                // 🚨 IMPORTANTE: ROLE_ + nombre
                 .authorities("ROLE_" + roleName)
                 .build();
     }
