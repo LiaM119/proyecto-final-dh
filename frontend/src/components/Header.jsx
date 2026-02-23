@@ -1,4 +1,4 @@
-import { Link, NavLink, useNavigate } from "react-router-dom";
+﻿import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
 import { categoriesApi } from "../api/categories";
@@ -7,7 +7,7 @@ import "../styles/Header.css";
 import "../styles/AdvancedSearchModal.css";
 
 export default function Header() {
-  const { user, logout } = useAuth();
+  const { user, token, logout } = useAuth();
 
   const [categories, setCategories] = useState([]);
   const [open, setOpen] = useState(false);
@@ -74,14 +74,16 @@ export default function Header() {
   }, [openAdv]);
 
   const goToAll = () => {
-    navigate("/productos");
+    navigate("/alojamientos");
     setOpen(false);
   };
 
   const goToCategory = (id) => {
-    navigate(`/productos?category=${id}`);
+    navigate(`/alojamientos?category=${id}`);
     setOpen(false);
   };
+
+  const isAuthenticated = !!user && !!token;
 
   return (
     <>
@@ -90,7 +92,7 @@ export default function Header() {
           <Link to="/" className="hdr__logo">Turmalin</Link>
 
           <nav className="hdr__nav" aria-label="Primary">
-            {/* Dropdown productos */}
+            {/* Dropdown alojamientos */}
             <div className="hdr__dropdown" ref={boxRef}>
               <button
                 type="button"
@@ -99,7 +101,7 @@ export default function Header() {
                 aria-expanded={open}
                 aria-haspopup="menu"
               >
-                Productos <span className="hdr__caret">▾</span>
+                Alojamientos
               </button>
 
               {open && (
@@ -116,7 +118,7 @@ export default function Header() {
 
                   {categories.length === 0 ? (
                     <div className="hdr__item hdr__item--muted">
-                      No hay categorías
+                      No hay tipos de alojamiento
                     </div>
                   ) : (
                     categories.map((c) => (
@@ -147,7 +149,7 @@ export default function Header() {
             </button>
 
             {/* Auth */}
-            {!user ? (
+            {!isAuthenticated ? (
               <>
                 <NavLink to="/register" className="hdr__btn">
                   Crear cuenta
@@ -160,6 +162,9 @@ export default function Header() {
               <>
                 <NavLink to="/favoritos" className="hdr__link">
                   Favoritos
+                </NavLink>
+                <NavLink to="/mis-reservas" className="hdr__link">
+                  Mis reservas
                 </NavLink>
                 <span className="hdr__user">
                   {user.name || "Usuario"}
@@ -202,7 +207,7 @@ export default function Header() {
                   "advSearch",
                   JSON.stringify({ results, meta, ts: Date.now() })
                 );
-                navigate("/productos");
+                navigate("/alojamientos");
                 setOpenAdv(false);
               }}
             />
@@ -212,3 +217,5 @@ export default function Header() {
     </>
   );
 }
+
+

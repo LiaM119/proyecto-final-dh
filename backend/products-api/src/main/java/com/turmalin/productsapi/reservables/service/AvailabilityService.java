@@ -22,7 +22,7 @@ public class AvailabilityService {
         if (from.isAfter(to)) throw new IllegalArgumentException("Rango inválido");
 
         List<Reservation> overlaps = reservationRepository.findOverlappingReservations(
-                reservableId, ReservationStatus.CONFIRMED, from, to
+                reservableId, Collections.singletonList(ReservationStatus.CONFIRMED), from, to
         );
 
         Set<LocalDate> occupied = new HashSet<>();

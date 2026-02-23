@@ -1,4 +1,4 @@
-// src/components/CategorySelect.jsx
+﻿// src/components/CategorySelect.jsx
 import { useEffect, useState } from "react";
 import { categoriesApi } from "../api/categories";
 import CategoryCreateModal from "./CategoryCreateModal";
@@ -39,14 +39,14 @@ export default function CategorySelect({ value, onChange, disabled }) {
   return (
     <div className="row">
       <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <span style={{ flex: 1 }}>Categoría</span>
+        <span style={{ flex: 1 }}>Tipo de alojamiento</span>
         <button
           type="button"
           className="btn btn-sm"
           onClick={() => setOpenModal(true)}
           disabled={disabled || loading}
         >
-          + Nueva categoría
+          + Nuevo tipo
         </button>
       </label>
 
@@ -56,7 +56,7 @@ export default function CategorySelect({ value, onChange, disabled }) {
         onChange={handleSelect}
         disabled={disabled || loading}
       >
-        <option value="">— Sin categoría —</option>
+        <option value="">— Sin tipo —</option>
         {items.map((c) => (
           <option key={c.id} value={c.id}>
             {c.name}
@@ -72,3 +72,4 @@ export default function CategorySelect({ value, onChange, disabled }) {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { DayPicker } from "react-day-picker";
 import { format } from "date-fns";
 import "react-day-picker/dist/style.css";
@@ -153,19 +153,19 @@ export default function SearchBlock({ products = [], onSearch }) {
       <div className="sb__head">
         <h2 className="sb__title">Realizar búsqueda</h2>
         <p className="sb__desc">
-          Encontrá productos que se ajusten a lo que buscás. Podés filtrar por
+          Encontra alojamientos que se ajusten a lo que buscas. Podes filtrar por
           palabra clave y por rango de fechas.
         </p>
       </div>
 
       <div className="sb__grid">
         <div className="sb__field">
-          <label className="sb__label">Producto / categoría</label>
+          <label className="sb__label">Alojamiento / tipo</label>
           <div className="sb__inputWrap">
             <input
               className="sb__input"
               value={q}
-              placeholder="Ej: teclado, Ryzen, reparación..."
+              placeholder="Ej: suite, doble, spa..."
               onChange={(e) => {
                 setQ(e.target.value);
                 setOpenSug(true);
@@ -234,3 +234,5 @@ export default function SearchBlock({ products = [], onSearch }) {
     </section>
   );
 }
+
+

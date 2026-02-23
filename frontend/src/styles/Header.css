@@ -49,8 +49,29 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  color: #e9ecff !important;
 }
 .hdr__link:hover { color: #ffffff !important; opacity: .9; background: rgba(255,255,255,0.06); }
+
+.hdr__advBtn {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: 0;
+  color: #e9ecff;
+  padding: 6px 8px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  font: inherit;
+}
+
+.hdr__advBtn:hover {
+  color: #ffffff;
+  opacity: .9;
+  background: rgba(255,255,255,0.06);
+}
 
 /* Botones */
 .hdr__btn {
@@ -94,7 +115,7 @@
   border: 0;
   cursor: pointer;
   font: inherit;
-  color: inherit;
+  color: #e9ecff !important;
 }
 
 .hdr__link--btn.is-open {

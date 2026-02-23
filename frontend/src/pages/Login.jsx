@@ -1,10 +1,11 @@
 // src/pages/Login.jsx
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { login } = useAuth();
 
   const [email, setEmail] = useState("");
@@ -26,7 +27,8 @@ export default function Login() {
 
       await login(email, password);
 
-      navigate("/");
+      const redirect = searchParams.get("redirect");
+      navigate(redirect || "/");
     } catch (err) {
       console.error("Error al iniciar sesión:", err);
       setError("No se pudo iniciar sesión. Verificá email y contraseña.");

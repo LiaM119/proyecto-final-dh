@@ -28,7 +28,7 @@ function writeLocalIds(ids) {
   try {
     localStorage.setItem(LS_KEY, JSON.stringify(toNumberArray(ids)));
   } catch {
-
+    return;
   }
 }
 
@@ -91,6 +91,6 @@ export function clearFavoritesCache() {
   try {
     localStorage.removeItem(LS_KEY);
   } catch {
-
+    return;
   }
 }

@@ -5,11 +5,29 @@ import { authApi } from "../api/auth";
 const AuthContext = createContext(null);
 export const useAuth = () => useContext(AuthContext);
 
+function userIsAdmin(appUser) {
+  if (!appUser) return false;
+  if (appUser.admin === true) return true;
+
+  const role = String(appUser.role || "").toUpperCase();
+  return role === "ADMIN" || role === "ROLE_ADMIN";
+}
+
+function normalizeUser(appUser) {
+  if (!appUser) return null;
+  return { ...appUser, admin: userIsAdmin(appUser) };
+}
+
 export default function AuthProvider({ children }) {
   // ==================== ESTADOS ====================
   const [user, setUser] = useState(() => {
-    const raw = localStorage.getItem("turmalin:user");
-    return raw ? JSON.parse(raw) : null;
+    try {
+      const raw = localStorage.getItem("turmalin:user");
+      return raw ? normalizeUser(JSON.parse(raw)) : null;
+    } catch {
+      localStorage.removeItem("turmalin:user");
+      return null;
+    }
   });
 
   const [token, setToken] = useState(() => {
@@ -31,7 +49,7 @@ export default function AuthProvider({ children }) {
   const login = async (email, password) => {
     const data = await authApi.login(email, password);
 
-    const appUser = data.user;
+    const appUser = normalizeUser(data.user);
 
     setUser(appUser);
     setToken(data.token);
@@ -51,9 +69,9 @@ export default function AuthProvider({ children }) {
     token,
     login,
     logout,
-    setUser,              
-    isLogged: !!user,
-    isAdmin: user?.admin === true,
+    setUser: (nextUser) => setUser(normalizeUser(nextUser)),
+    isLogged: !!user && !!token,
+    isAdmin: userIsAdmin(user),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

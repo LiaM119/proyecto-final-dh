@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { productsApi } from "../../api/products";
 import CategorySelect from "../../components/CategorySelect";
@@ -67,7 +67,7 @@ export default function AddProduct() {
         });
       } catch (e) {
         console.error(e);
-        setError("No se pudo cargar el producto.");
+        setError("No se pudo cargar el alojamiento.");
       } finally {
         if (alive) setLoading(false);
       }
@@ -95,7 +95,7 @@ export default function AddProduct() {
 
     if (!form.name.trim()) return setError("El nombre es obligatorio");
     if (Number.isNaN(Number(form.price))) return setError("Precio inválido");
-    if (Number.isNaN(Number(form.stock))) return setError("Stock inválido");
+    if (Number.isNaN(Number(form.stock))) return setError("Capacidad invalida");
 
     try {
       setSaving(true);
@@ -114,10 +114,10 @@ export default function AddProduct() {
         await productsApi.createMultipart(payload);
       }
 
-      navigate("/administracion/productos");
+      navigate("/administracion/alojamientos");
     } catch (e) {
       console.error(e);
-      setError("No se pudo guardar el producto.");
+      setError("No se pudo guardar el alojamiento.");
     } finally {
       setSaving(false);
     }
@@ -125,7 +125,7 @@ export default function AddProduct() {
 
   return (
     <div className="admin-addproduct container" style={{ maxWidth: 720 }}>
-      <h1>{routeId ? "Editar producto" : "Registrar producto"}</h1>
+      <h1>{routeId ? "Editar alojamiento" : "Registrar alojamiento"}</h1>
 
       <form className="form" onSubmit={onSubmit}>
         {error && <div className="alert error">{error}</div>}
@@ -159,7 +159,7 @@ export default function AddProduct() {
           style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}
         >
           <label className="row">
-            <span>Precio</span>
+            <span>Tarifa por noche</span>
             <input
               className="input"
               type="number"
@@ -173,7 +173,7 @@ export default function AddProduct() {
           </label>
 
           <label className="row">
-            <span>Stock</span>
+            <span>Capacidad maxima (huespedes)</span>
             <input
               className="input"
               type="number"
@@ -228,7 +228,7 @@ export default function AddProduct() {
                       height: 80,
                       objectFit: "cover",
                       borderRadius: 8,
-                      border: "1px solid #2a2f45",
+                      border: "1px solid rgba(175, 149, 236, 0.34)",
                     }}
                   />
                 ))}
@@ -265,7 +265,7 @@ export default function AddProduct() {
                     height: 80,
                     objectFit: "cover",
                     borderRadius: 8,
-                    border: "1px solid #2a2f45",
+                    border: "1px solid rgba(175, 149, 236, 0.34)",
                   }}
                 />
               ))}
@@ -290,3 +290,5 @@ export default function AddProduct() {
     </div>
   );
 }
+
+

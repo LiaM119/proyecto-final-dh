@@ -17,6 +17,9 @@
   box-shadow: 0 20px 60px rgba(0,0,0,.45);
   overflow: hidden;
   color: #e7e9ff;
+  max-height: min(88vh, 760px);
+  display: flex;
+  flex-direction: column;
 }
 
 .spm-head{
@@ -50,6 +53,7 @@
 
 .spm-body{
   padding: 16px;
+  overflow-y: auto;
 }
 
 .spm-preview{
@@ -175,4 +179,15 @@
   border-radius: 12px;
   cursor: pointer;
   font-weight: 600;
+}
+
+@media (max-width: 560px){
+  .spm-preview{
+    grid-template-columns: 1fr;
+  }
+
+  .spm-thumb{
+    width: 100%;
+    height: 160px;
+  }
 }

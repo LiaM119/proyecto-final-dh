@@ -6,9 +6,12 @@ import com.turmalin.productsapi.product.Product;
 import com.turmalin.productsapi.product.ProductRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Service
 public class FavoritesService {
@@ -23,7 +26,7 @@ public class FavoritesService {
 
     private User getUserOrThrow(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + email));
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Usuario no encontrado"));
     }
 
     @Transactional(readOnly = true)
@@ -39,7 +42,7 @@ public class FavoritesService {
     public Set<Long> addFavorite(String email, Long productId) {
         User user = getUserOrThrow(email);
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + productId));
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Alojamiento no encontrado"));
 
         user.addFavorite(product);
         userRepository.save(user);
@@ -51,7 +54,7 @@ public class FavoritesService {
     public Set<Long> removeFavorite(String email, Long productId) {
         User user = getUserOrThrow(email);
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + productId));
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Alojamiento no encontrado"));
 
         user.removeFavorite(product);
         userRepository.save(user);
@@ -59,3 +62,4 @@ public class FavoritesService {
         return getFavoriteIds(email);
     }
 }
+

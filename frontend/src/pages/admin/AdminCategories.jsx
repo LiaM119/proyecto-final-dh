@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { categoriesApi } from "../../api/categories";
-import "../../styles/adminCategories.css";
+import "../../styles/AdminCategories.css";
 
 export default function AdminCategories() {
   const [loading, setLoading] = useState(true);
@@ -20,7 +20,7 @@ export default function AdminCategories() {
       const data = await categoriesApi.getAll();
       setCats(Array.isArray(data) ? data : []);
     } catch (e) {
-      setErr(typeof e === "string" ? e : "No se pudieron cargar las categorías.");
+      setErr(typeof e === "string" ? e : "No se pudieron cargar los tipos de alojamiento.");
       setCats([]);
     } finally {
       setLoading(false);
@@ -66,42 +66,46 @@ export default function AdminCategories() {
       await load();
     } catch (e) {
       if (typeof e === "string") setErr(e);
-      else setErr("No se pudo eliminar la categoría.");
+      else setErr("No se pudo eliminar el tipo de alojamiento.");
     } finally {
       setDeleting(false);
     }
   }
 
   return (
-    <div className="adminCats">
-      <div className="adminCats__head">
-        <h2>Categorías</h2>
-        <button className="btn" onClick={load} disabled={loading}>
+    <div className="admin-cats">
+      <div className="admin-cats__head">
+        <h2>Tipos de alojamiento</h2>
+        <button className="admin-cats__btn" type="button" onClick={load} disabled={loading}>
           Recargar
         </button>
       </div>
 
-      {loading && <p className="muted">Cargando...</p>}
-      {err && !open && <p className="error">{err}</p>}
+      {loading && <p className="admin-cats__muted">Cargando...</p>}
+      {err && !open && <p className="admin-cats__error">{err}</p>}
 
       {!loading && cats.length === 0 && (
-        <p className="muted">No hay categorías cargadas.</p>
+        <p className="admin-cats__muted">No hay tipos de alojamiento cargados.</p>
       )}
 
       {!loading && cats.length > 0 && (
-        <div className="table">
-          <div className="row row--head">
+        <div className="admin-cats__table">
+          <div className="admin-cats__row admin-cats__row--head">
             <div>ID</div>
             <div>Nombre</div>
-            <div className="right">Acciones</div>
+            <div className="admin-cats__right">Acciones</div>
           </div>
 
           {cats.map((c) => (
-            <div className="row" key={c.id}>
-              <div className="mono">{c.id}</div>
+            <div className="admin-cats__row" key={c.id}>
+              <div className="admin-cats__mono">{c.id}</div>
               <div>{c.name}</div>
-              <div className="right">
-                <button className="btn btn--danger" onClick={() => openDelete(c)}>
+              <div className="admin-cats__right">
+                <button
+                  className="admin-cats__btn admin-cats__btn--danger"
+                  type="button"
+                  onClick={() => openDelete(c)}
+                >
                   Eliminar
                 </button>
               </div>
@@ -111,49 +115,54 @@ export default function AdminCategories() {
       )}
 
       {open && (
-        <div className="modalBackdrop" onMouseDown={closeModal}>
-          <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
-            <div className="modal__title">Eliminar categoría</div>
+        <div className="admin-modal-backdrop" onMouseDown={closeModal}>
+          <div className="admin-modal" onMouseDown={(e) => e.stopPropagation()}>
+            <div className="admin-modal__title">Eliminar tipo de alojamiento</div>
 
-            <p className="modal__text">
-              Estás por eliminar: <b>{selected?.name}</b>
+            <p className="admin-modal__text">
+              Estas por eliminar: <b>{selected?.name}</b>
             </p>
 
-            <div className="warnBox">
+            <div className="admin-cats__warn">
               <b>Importante:</b>{" "}
               {productCount === null ? (
                 <span>
-                  Si tiene productos asociados, el sistema evitará borrarla a menos que actives
-                  “Forzar”.
+                  Si tiene alojamientos asociados, el sistema evitara borrarlo a menos que actives
+                  "Forzar".
                 </span>
               ) : productCount === 0 ? (
-                <span>No tiene productos asociados.</span>
+                <span>No tiene alojamientos asociados.</span>
               ) : (
                 <span>
-                  Tiene <b>{productCount}</b> producto(s) asociado(s). Si activás “Forzar”, se
-                  eliminarán también.
+                  Tiene <b>{productCount}</b> alojamiento(s) asociado(s). Si activas "Forzar", se
+                  eliminaran tambien.
                 </span>
               )}
             </div>
 
-            <label className="check">
+            <label className="admin-cats__check">
               <input
                 type="checkbox"
                 checked={force}
                 onChange={(e) => setForce(e.target.checked)}
                 disabled={deleting}
               />
-              <span>Forzar (eliminar también productos asociados)</span>
+              <span>Forzar (eliminar tambien alojamientos asociados)</span>
             </label>
 
-            {err && <p className="error">{err}</p>}
+            {err && <p className="admin-cats__error">{err}</p>}
 
-            <div className="modal__actions">
-              <button className="btn" onClick={closeModal} disabled={deleting}>
+            <div className="admin-modal__actions">
+              <button className="admin-cats__btn" type="button" onClick={closeModal} disabled={deleting}>
                 Cancelar
               </button>
-              <button className="btn btn--danger" onClick={confirmDelete} disabled={deleting}>
-                {deleting ? "Eliminando..." : "Confirmar eliminación"}
+              <button
+                className="admin-cats__btn admin-cats__btn--danger"
+                type="button"
+                onClick={confirmDelete}
+                disabled={deleting}
+              >
+                {deleting ? "Eliminando..." : "Confirmar eliminacion"}
               </button>
             </div>
           </div>

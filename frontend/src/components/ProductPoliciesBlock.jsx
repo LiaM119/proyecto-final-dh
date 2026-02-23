@@ -1,4 +1,4 @@
-// src/components/ProductPoliciesBlock.jsx
+﻿// src/components/ProductPoliciesBlock.jsx
 import "./../styles/productPoliciesBlock.css";
 
 export default function ProductPoliciesBlock({ policies = [] }) {
@@ -10,23 +10,23 @@ export default function ProductPoliciesBlock({ policies = [] }) {
           {
             title: "Uso adecuado",
             description:
-              "El producto debe utilizarse únicamente para el fin para el cual fue diseñado. Un uso indebido puede causar daños o fallas.",
+              "El alojamiento debe utilizarse respetando la capacidad y condiciones de la reserva.",
           },
           {
             title: "Cuidados generales",
             description:
-              "Mantener el producto limpio y seco. Evitar exposición prolongada al sol, humedad o temperaturas extremas.",
+              "Mantener la habitacion en buen estado y respetar horarios establecidos.",
           },
           {
             title: "Seguridad",
             description:
-              "No permitir el uso del producto por personas no capacitadas. Si detectás fallas, suspendé su uso inmediatamente.",
+              "No superar la capacidad maxima ni realizar actividades no autorizadas en el alojamiento.",
           },
         ];
 
   return (
     <section className="ppb-container">
-      <h2 className="ppb-title">Políticas del producto</h2>
+      <h2 className="ppb-title">Politicas del alojamiento</h2>
 
       <div className="ppb-grid">
         {safePolicies.map((p, idx) => (
@@ -39,3 +39,4 @@ export default function ProductPoliciesBlock({ policies = [] }) {
     </section>
   );
 }
+

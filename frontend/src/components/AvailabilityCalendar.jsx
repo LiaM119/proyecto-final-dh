@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
-import { api } from "../services/api";
+import { reservationsApi } from "../api/reservations";
 
 function toISO(date) {
   const y = date.getFullYear();
@@ -41,7 +41,7 @@ export default function AvailabilityCalendar({ reservableId, onRangeChange }) {
     setLoading(true);
     setError("");
     try {
-      const data = await api.getAvailability(reservableId, toISO(from), toISO(to));
+      const data = await reservationsApi.getAvailability(reservableId, toISO(from), toISO(to));
       setOccupiedSet(new Set((data.occupiedDates || []).map(String)));
     } catch (e) {
       setError(e.message || "No se pudo cargar la disponibilidad");

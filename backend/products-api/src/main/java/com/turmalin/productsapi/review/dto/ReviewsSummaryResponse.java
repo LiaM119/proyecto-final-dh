@@ -12,5 +12,6 @@ import java.util.List;
 public class ReviewsSummaryResponse {
     private double averageRating;
     private long totalReviews;
+    private boolean canReview;
     private List<ReviewResponse> reviews;
 }

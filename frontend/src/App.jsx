@@ -1,4 +1,4 @@
-// src/App.jsx
+﻿// src/App.jsx
 import "./styles/reservas.css";
 
 import { Routes, Route } from "react-router-dom";
@@ -20,6 +20,7 @@ import Login from "./pages/Login";
 import PrivateRoute from "./components/PrivateRoute";
 
 import ReservationCheckout from "./pages/ReservationCheckout";
+import MyReservationHistory from "./pages/MyReservationHistory";
 
 import Favoritos from "./pages/Favoritos";
 
@@ -30,7 +31,12 @@ export default function App() {
       <main>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/alojamientos" element={<Productos />} />
           <Route path="/productos" element={<Productos />} />
+          <Route
+            path="/alojamientos/:id"
+            element={<ProductDetail fetchById={(id) => productsApi.getById(id)} />}
+          />
           <Route
             path="/productos/:id"
             element={<ProductDetail fetchById={(id) => productsApi.getById(id)} />}
@@ -43,14 +49,19 @@ export default function App() {
 
           <Route element={<PrivateRoute />}>
             <Route path="/favoritos" element={<Favoritos />} />
+            <Route path="/mis-reservas" element={<MyReservationHistory />} />
 
             {/* Admin root */}
             <Route path="/administracion" element={<AdminPanel />} />
 
+            <Route path="/administracion/alojamientos" element={<AdminProductsList />} />
             <Route path="/administracion/productos" element={<AdminProductsList />} />
+            <Route path="/admin/alojamientos" element={<AdminProductsList />} />
             <Route path="/admin/productos" element={<AdminProductsList />} />
 
+            <Route path="/admin/alojamientos/nuevo" element={<AddProduct />} />
             <Route path="/admin/productos/nuevo" element={<AddProduct />} />
+            <Route path="/admin/alojamientos/editar/:id" element={<AddProduct />} />
             <Route path="/admin/productos/editar/:id" element={<AddProduct />} />
             <Route path="/admin/add-product" element={<AddProduct />} />
 
@@ -63,3 +74,4 @@ export default function App() {
     </>
   );
 }
+

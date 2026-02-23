@@ -22,32 +22,41 @@ export default function AdminProductsList() {
   }, []);
 
   const handleDelete = async (id) => {
-    if (!confirm("¿Eliminar este producto?")) return;
+    if (!confirm("Eliminar este alojamiento?")) return;
+
     try {
       await productsApi.remove(id);
       setRows((prev) => prev.filter((p) => p.id !== id));
     } catch (e) {
-      alert("No se pudo eliminar");
+      if (e?.status === 404) {
+        setRows((prev) => prev.filter((p) => p.id !== id));
+        return;
+      }
+      alert(e?.message || "No se pudo eliminar el alojamiento.");
       console.error(e);
     }
   };
 
   if (loading) {
     return (
-      <div className="admin-content fixed-offset">
-        <p>Cargando…</p>
+      <div className="admin-content">
+        <p className="admin-muted">Cargando alojamientos...</p>
       </div>
     );
   }
 
   return (
-    <div className="admin-content fixed-offset">
+    <div className="admin-content">
       <div className="admin-header">
-        <h1>Lista de productos</h1>
+        <div>
+          <h1>Lista de alojamientos</h1>
+          <p className="admin-subtitle">Edita o elimina alojamientos publicados.</p>
+        </div>
+
         <button
-          className="btn-primary"
+          className="btn"
           type="button"
-            onClick={() => navigate("/admin/productos/nuevo")}
+          onClick={() => navigate("/administracion/alojamientos/nuevo")}
         >
           + Agregar
         </button>
@@ -57,9 +66,9 @@ export default function AdminProductsList() {
         <table className="admin-table">
           <thead>
             <tr>
-              <th style={{ width: 80 }}>ID</th>
+              <th style={{ width: 88 }}>ID</th>
               <th>Nombre</th>
-              <th style={{ width: 320 }}>Acciones</th>
+              <th style={{ width: 300 }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -67,70 +76,34 @@ export default function AdminProductsList() {
               <tr key={p.id}>
                 <td>{p.id}</td>
                 <td>{p.name}</td>
-                <td
-                  className="actions"
-                  style={{ display: "flex", gap: 10, flexWrap: "wrap" }}
-                >
-                  <button
-                    type="button"
-                    onClick={() => navigate(`/productos/${p.id}`)}
-                    style={{
-                      minWidth: 88,
-                      height: 36,
-                      padding: "0 14px",
-                      borderRadius: 8,
-                      border: "1px solid #2f3550",
-                      background: "#252a3b",
-                      color: "#e5e9f5",
-                      fontWeight: 600,
-                    }}
-                  >
+                <td className="admin-table__actions">
+                  <button type="button" className="btn btn-sm btn-ghost" onClick={() => navigate(`/alojamientos/${p.id}`)}>
                     Ver
                   </button>
                   <button
                     type="button"
-                    onClick={() =>
-                      navigate(`/administracion/productos/editar/${p.id}`)
-                    }
-                    style={{
-                      minWidth: 88,
-                      height: 36,
-                      padding: "0 14px",
-                      borderRadius: 8,
-                      border: "1px solid #3a4670",
-                      background: "#2a3551",
-                      color: "#fff",
-                      fontWeight: 600,
-                      boxShadow: "0 0 0 1px rgba(58,70,112,.25)",
-                    }}
-                    title="Editar producto"
+                    className="btn btn-sm btn-secondary"
+                    onClick={() => navigate(`/administracion/alojamientos/editar/${p.id}`)}
+                    title="Editar alojamiento"
                     aria-label={`Editar ${p.name}`}
                   >
                     Editar
                   </button>
                   <button
                     type="button"
+                    className="btn btn-sm btn-danger"
                     onClick={() => handleDelete(p.id)}
-                    style={{
-                      minWidth: 88,
-                      height: 36,
-                      padding: "0 14px",
-                      borderRadius: 8,
-                      border: "1px solid #5a2b3d",
-                      background: "#3a2430",
-                      color: "#ffd7df",
-                      fontWeight: 600,
-                    }}
                   >
                     Eliminar
                   </button>
                 </td>
               </tr>
             ))}
+
             {rows.length === 0 && (
               <tr>
-                <td colSpan={3} style={{ textAlign: "center", opacity: 0.7 }}>
-                  No hay productos
+                <td colSpan={3} className="admin-empty">
+                  No hay alojamientos cargados.
                 </td>
               </tr>
             )}

@@ -1,4 +1,3 @@
-// src/main/java/com/turmalin/productsapi/auth/AuthController.java
 package com.turmalin.productsapi.auth;
 
 import com.turmalin.productsapi.auth.dto.AuthResponse;
@@ -6,13 +5,21 @@ import com.turmalin.productsapi.auth.dto.LoginDTO;
 import com.turmalin.productsapi.auth.dto.RegisterDTO;
 import com.turmalin.productsapi.auth.dto.UserView;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
@@ -21,59 +28,68 @@ import java.util.Map;
 @RequestMapping("/auth")
 @CrossOrigin
 public class AuthController {
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     private final AuthenticationManager am;
     private final JwtUtil jwt;
     private final UserRepository repo;
     private final PasswordEncoder encoder;
+    private final boolean seedDemoAdmin;
+    private final String seedEmail;
+    private final String seedPassword;
 
     public AuthController(
             AuthenticationManager am,
             JwtUtil jwt,
             UserRepository repo,
-            PasswordEncoder encoder
+            PasswordEncoder encoder,
+            @Value("${app.seed-demo-admin:false}") boolean seedDemoAdmin,
+            @Value("${app.seed-demo-admin-email:demo@demo.com}") String seedEmail,
+            @Value("${app.seed-demo-admin-password:demo123}") String seedPassword
     ) {
         this.am = am;
         this.jwt = jwt;
         this.repo = repo;
         this.encoder = encoder;
+        this.seedDemoAdmin = seedDemoAdmin;
+        this.seedEmail = seedEmail;
+        this.seedPassword = seedPassword;
     }
 
-    // ================== SEED ADMIN DEMO ==================
     @PostConstruct
     public void seed() {
-        if (!repo.existsByEmail("demo@demo.com")) {
+        if (!seedDemoAdmin || seedEmail == null || seedEmail.isBlank() || seedPassword == null || seedPassword.isBlank()) {
+            return;
+        }
+
+        if (!repo.existsByEmail(seedEmail)) {
             User u = User.builder()
                     .firstName("Demo")
                     .lastName("Admin")
-                    .email("demo@demo.com")
-                    .password(encoder.encode("demo123"))
+                    .email(seedEmail)
+                    .password(encoder.encode(seedPassword))
                     .admin(true)
                     .role(User.Role.ADMIN)
                     .build();
             repo.save(u);
-            System.out.println(">>> Usuario demo@demo.com creado como ADMIN (pass: demo123)");
+            log.info("Seeded demo admin account: {}", seedEmail);
         }
     }
 
-
     @PostMapping("/login")
     public AuthResponse login(@RequestBody LoginDTO req) {
-
         String email = req.getEmail();
         String password = req.getPassword();
-
-        System.out.println(">>> /auth/login email=" + email);
 
         if (email == null || password == null) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Falta email o contraseña"
+                    "Falta email o contrasena"
             );
         }
 
         try {
-            Authentication auth = am.authenticate(
+            am.authenticate(
                     new UsernamePasswordAuthenticationToken(email, password)
             );
 
@@ -82,8 +98,8 @@ public class AuthController {
             String token = jwt.generate(
                     u.getEmail(),
                     Map.of(
-                            "uid",   u.getId(),
-                            "name",  u.getFirstName() + " " + u.getLastName(),
+                            "uid", u.getId(),
+                            "name", u.getFirstName() + " " + u.getLastName(),
                             "admin", u.isAdmin()
                     )
             );
@@ -92,24 +108,20 @@ public class AuthController {
                     token,
                     UserView.from(u)
             );
-
         } catch (BadCredentialsException e) {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
-                    "Correo o contraseña incorrectos"
+                    "Correo o contrasena incorrectos"
             );
         }
     }
 
     @PostMapping("/register")
     public AuthResponse register(@RequestBody RegisterDTO req) {
-
-        System.out.println(">>> LLEGÓ A /auth/register con: " + req.getEmail());
-
         if (repo.existsByEmail(req.getEmail())) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
-                    "El email ya está registrado."
+                    "El email ya esta registrado."
             );
         }
 
@@ -126,8 +138,8 @@ public class AuthController {
         String token = jwt.generate(
                 u.getEmail(),
                 Map.of(
-                        "uid",   u.getId(),
-                        "name",  u.getFirstName() + " " + u.getLastName(),
+                        "uid", u.getId(),
+                        "name", u.getFirstName() + " " + u.getLastName(),
                         "admin", u.isAdmin()
                 )
         );

@@ -1,7 +1,14 @@
-// src/pages/admin/AdminUsers.jsx
 import { useEffect, useState } from "react";
 import { adminApi } from "../../api/admin";
 import { useAuth } from "../../context/AuthContext.jsx";
+import "../../styles/AdminPanel.css";
+
+function isAdminUser(user) {
+  if (!user) return false;
+  if (user.admin === true) return true;
+  const role = String(user.role || "").toUpperCase();
+  return role === "ADMIN" || role === "ROLE_ADMIN";
+}
 
 export default function AdminUsers() {
   const { user: currentUser, setUser: setAuthUser } = useAuth();
@@ -15,10 +22,10 @@ export default function AdminUsers() {
       setLoading(true);
       setError("");
       const data = await adminApi.getUsers();
-      setUsers(data);
+      setUsers(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
-      setError(err.message || "Error al cargar usuarios");
+      setError(err.message || "Error al cargar usuarios.");
     } finally {
       setLoading(false);
     }
@@ -31,105 +38,93 @@ export default function AdminUsers() {
   const handleToggleAdmin = async (u) => {
     try {
       setSavingId(u.id);
-      const updated = await adminApi.setAdmin(u.id, !u.admin);
+      const updated = await adminApi.setAdmin(u.id, !isAdminUser(u));
 
-      setUsers((prev) =>
-        prev.map((x) => (x.id === updated.id ? updated : x))
-      );
+      setUsers((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
       if (currentUser && currentUser.id === updated.id) {
         setAuthUser(updated);
       }
     } catch (err) {
       console.error(err);
-      alert(err.message || "Error al actualizar permisos");
+      alert(err.message || "Error al actualizar permisos.");
     } finally {
       setSavingId(null);
     }
   };
 
   if (loading) {
-    return <p style={{ padding: 24 }}>Cargando usuarios...</p>;
+    return (
+      <div className="admin-content">
+        <p className="admin-muted">Cargando usuarios...</p>
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div style={{ padding: 24 }}>
-        <p style={{ color: "tomato" }}>{error}</p>
-        <button onClick={loadUsers}>Reintentar</button>
+      <div className="admin-content">
+        <p className="admin-error">{error}</p>
+        <button type="button" className="btn btn-secondary" onClick={loadUsers}>
+          Reintentar
+        </button>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: 24 }}>
-      <h2>Gestión de usuarios</h2>
-      <p>Asignar o quitar permisos de administrador.</p>
+    <div className="admin-content">
+      <div className="admin-header">
+        <div>
+          <h1>Gestion de usuarios</h1>
+          <p className="admin-subtitle">Asigna o quita permisos de administrador.</p>
+        </div>
+      </div>
 
       {users.length === 0 ? (
-        <p>No hay usuarios registrados.</p>
+        <p className="admin-muted">No hay usuarios registrados.</p>
       ) : (
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            marginTop: 16,
-          }}
-        >
-          <thead>
-            <tr>
-              <th style={thStyle}>ID</th>
-              <th style={thStyle}>Nombre</th>
-              <th style={thStyle}>Email</th>
-              <th style={thStyle}>Rol</th>
-              <th style={thStyle}>Admin</th>
-              <th style={thStyle}>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((u) => (
-              <tr key={u.id}>
-                <td style={tdStyle}>{u.id}</td>
-                <td style={tdStyle}>{u.name}</td>
-                <td style={tdStyle}>{u.email}</td>
-                <td style={tdStyle}>{u.role || (u.admin ? "ADMIN" : "USER")}</td>
-                <td style={tdStyle}>{u.admin ? "Sí" : "No"}</td>
-                <td style={tdStyle}>
-                  <button
-                    onClick={() => handleToggleAdmin(u)}
-                    disabled={savingId === u.id}
-                    style={{
-                      padding: "4px 10px",
-                      borderRadius: 6,
-                      border: "none",
-                      cursor: "pointer",
-                      backgroundColor: u.admin ? "#e74c3c" : "#2ecc71",
-                      color: "#fff",
-                      fontSize: 13,
-                    }}
-                  >
-                    {savingId === u.id
-                      ? "Guardando..."
-                      : u.admin
-                      ? "Quitar admin"
-                      : "Hacer admin"}
-                  </button>
-                </td>
+        <div className="table-wrap">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th style={{ width: 70 }}>ID</th>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th style={{ width: 140 }}>Rol</th>
+                <th style={{ width: 160 }}>Accion</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {users.map((u) => {
+                const isAdmin = isAdminUser(u);
+
+                return (
+                  <tr key={u.id}>
+                    <td>{u.id}</td>
+                    <td>{u.name || "-"}</td>
+                    <td>{u.email}</td>
+                    <td>{isAdmin ? "ADMIN" : "USER"}</td>
+                    <td>
+                      <button
+                        type="button"
+                        className={`btn btn-sm ${isAdmin ? "btn-danger" : "btn-secondary"}`}
+                        onClick={() => handleToggleAdmin(u)}
+                        disabled={savingId === u.id}
+                      >
+                        {savingId === u.id
+                          ? "Guardando..."
+                          : isAdmin
+                          ? "Quitar admin"
+                          : "Hacer admin"}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
 }
-
-const thStyle = {
-  textAlign: "left",
-  padding: "8px 6px",
-  borderBottom: "1px solid #333",
-};
-
-const tdStyle = {
-  padding: "8px 6px",
-  borderBottom: "1px solid #222",
-};

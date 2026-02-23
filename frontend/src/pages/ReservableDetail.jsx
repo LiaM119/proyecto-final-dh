@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AvailabilityCalendar from "../components/AvailabilityCalendar";
-import { api } from "../services/api";
+import { reservationsApi } from "../api/reservations";
 
 export default function ReservableDetail() {
   const { id } = useParams();
@@ -14,7 +14,7 @@ export default function ReservableDetail() {
   useEffect(() => {
     let mounted = true;
     setError("");
-    api.getReservable(id)
+    reservationsApi.getReservable(id)
       .then((data) => mounted && setItem(data))
       .catch((e) => mounted && setError(e.message));
     return () => { mounted = false; };
@@ -32,7 +32,7 @@ export default function ReservableDetail() {
     <div className="page">
       <div className="detail">
         <div className="detail__info">
-          <span className="pill">{item.type === "SERVICE" ? "Servicio" : "Producto"}</span>
+          <span className="pill">{item.type === "SERVICE" ? "Servicio" : "Alojamiento"}</span>
           <h1>{item.name}</h1>
           <p className="muted">{item.description}</p>
         </div>
@@ -56,3 +56,5 @@ export default function ReservableDetail() {
     </div>
   );
 }
+
+

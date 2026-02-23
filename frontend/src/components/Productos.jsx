@@ -1,12 +1,22 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { productsApi } from "../api/products";
-import "../styles/Productos.css";
-import ImageCarousel from "./ImageCarousel";
 import FavoriteButton from "./FavoriteButton";
 import ShareButton from "./ShareButton";
-import { useNavigate } from "react-router-dom";
+import "../styles/Productos.css";
 
 const API_BASE = import.meta.env.VITE_API || "http://localhost:8080";
+const FALLBACK_IMG =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500'>" +
+      "<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>" +
+      "<stop offset='0%' stop-color='#1c2240'/><stop offset='100%' stop-color='#0f1325'/>" +
+      "</linearGradient></defs>" +
+      "<rect width='800' height='500' fill='url(#g)'/>" +
+      "<text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='#cfc5f5' " +
+      "font-family='Arial, sans-serif' font-size='34'>Turmalin</text></svg>"
+  );
 
 const toAbsoluteUrl = (u = "") => {
   if (!u) return "";
@@ -59,8 +69,8 @@ export default function Productos() {
             return;
           }
         }
-      } catch (_) {
-
+      } catch {
+        void 0;
       }
 
       try {
@@ -79,9 +89,9 @@ export default function Productos() {
         setTotalPages(tp);
         if (safePage !== page) setPage(safePage);
         setLoading(false);
-      } catch (_) {
+      } catch {
         if (cancelled) return;
-        setError("No se pudo cargar productos");
+        setError("No se pudo cargar alojamientos");
         setLoading(false);
       }
     };
@@ -103,163 +113,154 @@ export default function Productos() {
   const goNext = () => setPage((p) => Math.min(totalPages, p + 1));
   const goLast = () => setPage(totalPages);
 
+  const getCardImage = (product) => {
+    const raw = product?.imageUrls ?? product?.imagesUrls ?? [];
+    const first = Array.isArray(raw) ? raw[0] : "";
+    const src = toAbsoluteUrl(first || "");
+    return src || FALLBACK_IMG;
+  };
+
+  const getCategoryName = (category) =>
+    typeof category === "string" ? category : category?.name;
+
   if (loading) {
     return (
-      <main className="main container products-page">
-        <p>Cargando...</p>
+      <main className="main products-page">
+        <div className="products-shell">
+          <p className="products-empty">Cargando...</p>
+        </div>
       </main>
     );
   }
 
   if (error) {
     return (
-      <main className="main container products-page">
-        <p style={{ color: "#f55" }}>{error}</p>
+      <main className="main products-page">
+        <div className="products-shell">
+          <p className="products-error">{error}</p>
+        </div>
       </main>
     );
   }
 
   return (
-    <main className="main container products-page">
-      <div className="products-header">
-        <h1>Productos</h1>
-        <button
-          className="addProductButton"
-          onClick={() => navigate("/admin/productos/nuevo")}
-        >
-          Agregar producto
-        </button>
-      </div>
+    <main className="main products-page">
+      <div className="products-shell">
+        <div className="products-header">
+          <h1>Alojamientos</h1>
+          <button
+            className="addProductButton"
+            onClick={() => navigate("/admin/alojamientos/nuevo")}
+          >
+            Agregar alojamiento
+          </button>
+        </div>
 
-      {!items.length && <p>No hay productos en esta página.</p>}
+        {!items.length && <p className="products-empty">No hay alojamientos en esta pagina.</p>}
 
-      <div className="grid">
-        {items.map((p) => {
-          const raw = p?.imageUrls ?? p?.imagesUrls ?? [];
-          const imgs = raw.map(toAbsoluteUrl).filter(Boolean);
+        <div className="grid">
+          {items.map((p, idx) => {
+            const goDetail = () =>
+              navigate(`/alojamientos/${p.id}`, { state: { product: p } });
+            const categoryName = getCategoryName(p?.category);
 
-          const goDetail = () =>
-            navigate(`/productos/${p.id}`, { state: { product: p } });
-
-          return (
-            <article
-              key={p.id}
-              className="product-card"
-              onClick={goDetail}
-              onKeyDown={(e) => (e.key === "Enter" ? goDetail() : null)}
-              tabIndex={0}
-            >
-              <div
-                style={{
-                  position: "absolute",
-                  top: 10,
-                  left: 10,
-                  zIndex: 6,
+            return (
+              <article
+                key={p?.id ?? `product-${idx}`}
+                className="product-card"
+                onClick={goDetail}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") goDetail();
                 }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
+                tabIndex={0}
               >
-                <FavoriteButton productId={p.id} />
-              </div>
+                <div
+                  className="product-card-actions product-card-actions--left"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                >
+                  <FavoriteButton productId={p.id} />
+                </div>
 
-              <div
-                style={{
-                  position: "absolute",
-                  top: 10,
-                  right: 10,
-                  zIndex: 6,
-                }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-              >
-                <ShareButton product={p} label="Compartir" />
-              </div>
+                <div
+                  className="product-card-actions product-card-actions--right"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                >
+                  <ShareButton product={p} className="product-share-btn" label="Compartir" />
+                </div>
 
-              <div className="card-media">
-                {imgs.length ? (
-                  <ImageCarousel
-                    images={imgs}
-                    onErrorSrc={`data:image/svg+xml;utf8,
-<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'>
-  <rect width='100%' height='100%' fill='%23111622'/>
-  <text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle'
-        font-family='Segoe UI, Roboto, Arial' font-size='28' fill='%23AAB2C5'>
-    Imagen de producto
-  </text>
-</svg>`}
-                  />
-                ) : (
-                  <div className="ic-empty">Sin imágenes</div>
-                )}
-              </div>
+                <div className="product-media-frame">
+                  <img src={getCardImage(p)} alt={p?.name || "Alojamiento"} loading="lazy" />
+                </div>
 
-              <h3 className="product-title">{p.name}</h3>
-              <p className="product-desc">{p.description}</p>
+                <h3 className="product-title">{p.name}</h3>
+                <p className="product-desc">{p.description}</p>
 
-              <div className="product-meta">
-                <strong>${p.price}</strong>
-                <span>Stock: {p.stock}</span>
-                {p.category && <span>• {p.category}</span>}
-              </div>
-            </article>
-          );
-        })}
+                <div className="product-meta">
+                  <strong>${p.price}</strong>
+                  <span>Capacidad: {p.stock} huespedes</span>
+                  {categoryName && <span>- {categoryName}</span>}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+
+        <nav className="paginator" aria-label="Paginacion de alojamientos">
+          <button
+            className="pag-btn"
+            onClick={goFirst}
+            disabled={page <= 1}
+            aria-label="Ir al inicio"
+            title="Inicio"
+          >
+            {"<<"}
+          </button>
+          <button
+            className="pag-btn"
+            onClick={goPrev}
+            disabled={page <= 1}
+            aria-label="Pagina anterior"
+            title="Anterior"
+          >
+            {"<"}
+          </button>
+
+          <span className="page-info">
+            Pagina <b>{page}</b> de <b>{totalPages}</b>
+            {typeof total === "number" ? (
+              <>
+                {" "}
+                - <b>{total}</b> alojamientos
+              </>
+            ) : null}
+          </span>
+
+          <button
+            className="pag-btn"
+            onClick={goNext}
+            disabled={page >= totalPages}
+            aria-label="Pagina siguiente"
+            title="Siguiente"
+          >
+            {">"}
+          </button>
+          <button
+            className="pag-btn"
+            onClick={goLast}
+            disabled={page >= totalPages}
+            aria-label="Ir al final"
+            title="Final"
+          >
+            {">>"}
+          </button>
+        </nav>
       </div>
-
-      {/* PAGINADOR */}
-      <nav className="paginator" aria-label="Paginación de productos">
-        <button
-          className="pag-btn"
-          onClick={goFirst}
-          disabled={page <= 1}
-          aria-label="Ir al inicio"
-          title="Inicio"
-        >
-          «
-        </button>
-        <button
-          className="pag-btn"
-          onClick={goPrev}
-          disabled={page <= 1}
-          aria-label="Página anterior"
-          title="Anterior"
-        >
-          ‹
-        </button>
-
-        <span className="page-info">
-          Página <b>{page}</b> de <b>{totalPages}</b>
-          {typeof total === "number" ? (
-            <>
-              {" "}
-              • <b>{total}</b> productos
-            </>
-          ) : null}
-        </span>
-
-        <button
-          className="pag-btn"
-          onClick={goNext}
-          disabled={page >= totalPages}
-          aria-label="Página siguiente"
-          title="Siguiente"
-        >
-          ›
-        </button>
-        <button
-          className="pag-btn"
-          onClick={goLast}
-          disabled={page >= totalPages}
-          aria-label="Ir al final"
-          title="Final"
-        >
-          »
-        </button>
-      </nav>
     </main>
   );
 }

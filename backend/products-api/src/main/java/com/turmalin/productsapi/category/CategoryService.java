@@ -116,7 +116,7 @@ public class CategoryService {
             throw new ResponseStatusException(
                     CONFLICT,
                     "No se puede eliminar la categoría porque tiene " + count +
-                            " producto(s) asociado(s). Activá 'Forzar' para eliminarlos también."
+                            " alojamiento(s) asociado(s). Activa 'Forzar' para eliminarlos tambien."
             );
         }
 

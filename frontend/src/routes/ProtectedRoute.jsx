@@ -1,15 +1,25 @@
 // frontend/src/routes/ProtectedRoute.jsx
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 
-export default function ProtectedRoute({ children, adminOnly = false }) {
-  const { user } = useAuth();
+function userIsAdmin(user) {
+  if (!user) return false;
+  if (user.admin === true) return true;
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
+  const role = String(user.role || "").toUpperCase();
+  return role === "ADMIN" || role === "ROLE_ADMIN";
+}
+
+export default function ProtectedRoute({ children, adminOnly = false }) {
+  const { user, token } = useAuth();
+  const location = useLocation();
+
+  if (!user || !token) {
+    const redirect = encodeURIComponent(location.pathname + location.search);
+    return <Navigate to={`/login?redirect=${redirect}`} replace />;
   }
 
-  if (adminOnly && !user.admin) {
+  if (adminOnly && !userIsAdmin(user)) {
     return <Navigate to="/" replace />;
   }
 

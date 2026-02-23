@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { createPortal } from "react-dom";
 import { categoriesApi } from "../api/categories";
 
@@ -33,7 +33,7 @@ export default function CategoryCreateModal({ open, onClose, onCreated }) {
       close();
     } catch (err) {
       console.error(err);
-      setError("No se pudo crear la categoría");
+      setError("No se pudo crear el tipo de alojamiento");
     } finally {
       setSaving(false);
     }
@@ -47,7 +47,7 @@ export default function CategoryCreateModal({ open, onClose, onCreated }) {
         role="dialog"
         aria-modal="true"
       >
-        <h3>Nueva categoría</h3>
+        <h3>Nuevo tipo de alojamiento</h3>
 
         <form onSubmit={handleSubmit} onKeyDown={(e)=> e.stopPropagation()}>
           {error && <div className="alert error">{error}</div>}
@@ -80,7 +80,7 @@ export default function CategoryCreateModal({ open, onClose, onCreated }) {
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
               disabled={saving}
-              placeholder="ej: procesadores"
+              placeholder="ej: suite-ejecutiva"
             />
           </label>
 
@@ -98,3 +98,5 @@ export default function CategoryCreateModal({ open, onClose, onCreated }) {
     document.body
   );
 }
+
+

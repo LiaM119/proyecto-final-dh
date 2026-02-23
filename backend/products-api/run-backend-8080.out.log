@@ -1,0 +1,142 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.6)
+
+2026-02-22T19:52:02.162-03:00  INFO 23728 --- [           main] c.t.productsapi.ProductsApiApplication   : Starting ProductsApiApplication v0.0.1-SNAPSHOT using Java 17.0.12 with PID 23728 (C:\Users\liamn\Desktop\curso-digitalHouse\proyecto-final-dh\backend\products-api\target\products-api-0.0.1-SNAPSHOT.jar started by liamn in C:\Users\liamn\Desktop\curso-digitalHouse\proyecto-final-dh\backend\products-api)
+2026-02-22T19:52:02.165-03:00  INFO 23728 --- [           main] c.t.productsapi.ProductsApiApplication   : No active profile set, falling back to 1 default profile: "default"
+2026-02-22T19:52:03.183-03:00  INFO 23728 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-02-22T19:52:03.244-03:00  INFO 23728 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 51 ms. Found 7 JPA repository interfaces.
+2026-02-22T19:52:04.175-03:00  INFO 23728 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-02-22T19:52:04.194-03:00  INFO 23728 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-02-22T19:52:04.194-03:00  INFO 23728 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
+2026-02-22T19:52:04.255-03:00  INFO 23728 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-02-22T19:52:04.257-03:00  INFO 23728 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2045 ms
+2026-02-22T19:52:04.532-03:00  INFO 23728 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-02-22T19:52:04.646-03:00  INFO 23728 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.29.Final
+2026-02-22T19:52:04.729-03:00  INFO 23728 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-02-22T19:52:05.199-03:00  INFO 23728 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-02-22T19:52:05.290-03:00  INFO 23728 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-02-22T19:52:05.519-03:00  INFO 23728 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:file:./data/productsdb user=SA
+2026-02-22T19:52:05.520-03:00  INFO 23728 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-02-22T19:52:05.564-03:00  INFO 23728 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-02-22T19:52:06.464-03:00  INFO 23728 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+Hibernate: 
+    alter table if exists categories 
+       drop constraint if exists UKt8o6pivur7nn124jehx7cygw5
+Hibernate: 
+    alter table if exists categories 
+       add constraint UKt8o6pivur7nn124jehx7cygw5 unique (name)
+Hibernate: 
+    alter table if exists favorites 
+       drop constraint if exists UKgh1s14hhb9qb8p2do933hscsf
+Hibernate: 
+    alter table if exists favorites 
+       add constraint UKgh1s14hhb9qb8p2do933hscsf unique (user_id, product_id)
+Hibernate: 
+    alter table if exists products 
+       drop constraint if exists UKo61fmio5yukmmiqgnxf8pnavn
+Hibernate: 
+    alter table if exists products 
+       add constraint UKo61fmio5yukmmiqgnxf8pnavn unique (name)
+Hibernate: 
+    alter table if exists reviews 
+       drop constraint if exists UK1nv3auyahyyy79hvtrcqgtfo9
+Hibernate: 
+    alter table if exists reviews 
+       add constraint UK1nv3auyahyyy79hvtrcqgtfo9 unique (product_id, user_id)
+2026-02-22T19:52:06.519-03:00  INFO 23728 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-02-22T19:52:07.256-03:00  INFO 23728 --- [           main] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2026-02-22T19:52:07.258-03:00  WARN 23728 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2026-02-22T19:52:07.344-03:00  INFO 23728 --- [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-02-22T19:52:08.675-03:00  INFO 23728 --- [           main] .r.e.ReservationEmailNotificationService : Mail config -> host: smtp.gmail.com, username: liamnahuelromero@gmail.com, auth: true, passwordConfigured: true
+2026-02-22T19:52:08.845-03:00  WARN 23728 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-02-22T19:52:09.830-03:00  INFO 23728 --- [           main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2'. Database available at 'jdbc:h2:file:./data/productsdb'
+2026-02-22T19:52:09.928-03:00  INFO 23728 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-02-22T19:52:09.949-03:00  INFO 23728 --- [           main] c.t.productsapi.ProductsApiApplication   : Started ProductsApiApplication in 8.365 seconds (process running for 8.921)
+2026-02-22T19:52:37.368-03:00  INFO 23728 --- [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-02-22T19:52:37.369-03:00  INFO 23728 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-02-22T19:52:37.370-03:00  INFO 23728 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+Hibernate: 
+    select
+        u1_0.id 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+    fetch
+        first ? rows only
+Hibernate: 
+    insert 
+    into
+        users
+        (admin, email, first_name, last_name, password, role, id) 
+    values
+        (?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.admin,
+        u1_0.email,
+        u1_0.first_name,
+        u1_0.last_name,
+        u1_0.password,
+        u1_0.role 
+    from
+        users u1_0 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.description,
+        r1_0.name,
+        r1_0.type 
+    from
+        reservables r1_0 
+    where
+        r1_0.id=?
+Hibernate: 
+    select
+        count(r1_0.id) 
+    from
+        reservations r1_0 
+    where
+        r1_0.reservable_id=? 
+        and r1_0.status in (?) 
+        and not((r1_0.end_date<? 
+        or r1_0.start_date>?))
+Hibernate: 
+    insert 
+    into
+        reservations
+        (created_at, end_date, reservable_id, start_date, status, user_id, id) 
+    values
+        (?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    select
+        p1_0.id,
+        p1_0.category_id,
+        p1_0.description,
+        p1_0.name,
+        p1_0.price,
+        p1_0.reservable_id,
+        p1_0.stock 
+    from
+        products p1_0 
+    where
+        p1_0.reservable_id in (?)
+2026-02-22T19:52:38.019-03:00  INFO 23728 --- [         task-1] .r.e.ReservationEmailNotificationService : Procesando envio de confirmacion para reserva 47 al destinatario liamnahuelromero+prod20260222195237@gmail.com
+2026-02-22T19:52:43.080-03:00  INFO 23728 --- [         task-1] .r.e.ReservationEmailNotificationService : Email de confirmacion enviado para reserva 47 a liamnahuelromero+prod20260222195237@gmail.com

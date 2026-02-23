@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -18,6 +18,9 @@ import "../styles/reservas.css";
 
 import ProductPoliciesBlock from "./ProductPoliciesBlock";
 
+// ✅ NUEVO: API de reservas alineada a tu backend actual
+import { reservationsApi } from "../api/reservations";
+
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 const FALLBACK = `data:image/svg+xml;utf8,
@@ -25,7 +28,7 @@ const FALLBACK = `data:image/svg+xml;utf8,
   <rect width='100%' height='100%' fill='%23111622'/>
   <text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle'
         font-family='Segoe UI, Roboto, Arial' font-size='28' fill='%23AAB2C5'>
-    Imagen de producto
+    Imagen de alojamiento
   </text>
 </svg>`;
 
@@ -53,32 +56,17 @@ function toISO(date) {
   const d = String(date.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
 }
+
 function addDays(date, days) {
   const copy = new Date(date);
   copy.setDate(copy.getDate() + days);
   return copy;
 }
 
-async function apiFetch(path, options = {}) {
-  const res = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
-    ...options,
-  });
-
-  let data = null;
-  try {
-    data = await res.json();
-  } catch {
-
-  }
-
-  if (!res.ok) {
-    const msg = data?.message || "Error inesperado";
-    const err = new Error(msg);
-    err.status = res.status;
-    throw err;
-  }
-  return data;
+function parseISOToDate(iso) {
+  // "YYYY-MM-DD" -> Date local sin TZ issues
+  const [y, m, d] = String(iso).split("-").map(Number);
+  return new Date(y, (m || 1) - 1, d || 1);
 }
 
 export default function ProductDetail({ fetchById }) {
@@ -91,7 +79,11 @@ export default function ProductDetail({ fetchById }) {
   const [thumbs, setThumbs] = useState(null);
   const [anim, setAnim] = useState(false);
 
-  const reservableId = Number(id);
+  const reservableId = useMemo(() => {
+    const raw = product?.reservableId ?? null;
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  }, [product]);
   const [range, setRange] = useState(undefined);
   const [occLoading, setOccLoading] = useState(true);
   const [occError, setOccError] = useState("");
@@ -107,17 +99,17 @@ export default function ProductDetail({ fetchById }) {
       {
         title: "Uso adecuado",
         description:
-          "El producto debe utilizarse únicamente para el fin para el cual fue diseñado. Un uso indebido puede provocar daños o fallas.",
+          "El alojamiento debe utilizarse respetando la capacidad y normas del establecimiento.",
       },
       {
         title: "Cuidados generales",
         description:
-          "Mantener el producto limpio y seco. Evitar la exposición prolongada al sol, humedad o temperaturas extremas.",
+          "Mantener el espacio en buen estado y respetar horarios de check-in y check-out.",
       },
       {
         title: "Seguridad",
         description:
-          "No permitir el uso del producto por personas no capacitadas. Ante cualquier falla, suspender su uso inmediatamente.",
+          "No se permiten eventos no autorizados ni superar la capacidad maxima de huespedes.",
       },
     ];
 
@@ -205,7 +197,7 @@ export default function ProductDetail({ fetchById }) {
         console.log("PRODUCT RAW:", p);
         console.log("PRODUCT KEYS:", p ? Object.keys(p) : []);
       } catch (e) {
-        setError(e?.message || "No se pudo obtener el producto.");
+        setError(e?.message || "No se pudo obtener el alojamiento.");
       }
     })();
 
@@ -214,14 +206,31 @@ export default function ProductDetail({ fetchById }) {
     };
   }, [id, fetchById]);
 
+  // ✅ ACTUALIZADO: ahora carga ocupación desde /api/reservations/reservable/{id}
   async function loadAvailability() {
+    if (!reservableId) {
+      setOccLoading(false);
+      setOccError("Este alojamiento no tiene reservable configurado.");
+      return;
+    }
+
     setOccLoading(true);
     setOccError("");
+
     try {
-      const data = await apiFetch(
-        `/api/reservables/${reservableId}/availability?from=${toISO(from)}&to=${toISO(to)}`
+      // Endpoint público: /api/reservables/{id}/availability
+      const availability = await reservationsApi.getAvailability(
+        reservableId,
+        toISO(from),
+        toISO(to)
       );
-      const occupied = new Set((data.occupiedDates || []).map(String));
+
+      const occupied = new Set();
+
+      for (const d of availability?.occupiedDates || []) {
+        occupied.add(String(d));
+      }
+
       setOccupiedSet(occupied);
     } catch (e) {
       setOccError(e?.message || "No se pudo cargar la disponibilidad.");
@@ -231,10 +240,10 @@ export default function ProductDetail({ fetchById }) {
   }
 
   useEffect(() => {
-    if (!Number.isFinite(reservableId)) return;
+    if (!product) return;
     loadAvailability();
-
-  }, [reservableId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product, reservableId]);
 
   const disabledDays = useMemo(() => {
     const today = new Date();
@@ -249,7 +258,7 @@ export default function ProductDetail({ fetchById }) {
   }, [occupiedSet]);
 
   const modifiers = useMemo(() => {
-    const occupiedDates = Array.from(occupiedSet).map((iso) => new Date(iso));
+    const occupiedDates = Array.from(occupiedSet).map((iso) => parseISOToDate(iso));
     return { occupied: occupiedDates };
   }, [occupiedSet]);
 
@@ -267,14 +276,14 @@ export default function ProductDetail({ fetchById }) {
   function goReserve() {
     const start = range?.from ? toISO(range.from) : null;
     const end = range?.to ? toISO(range.to) : null;
-    if (!start || !end) return;
+    if (!start || !end || !reservableId) return;
 
     navigate(`/reservas?reservableId=${reservableId}&start=${start}&end=${end}`);
   }
 
   if (error) {
     return (
-      <div className="pdp container">
+      <div className="pdp-page pdp">
         <div className="pdp-top-actions">
           <button type="button" className="back-btn" onClick={() => navigate(-1)} aria-label="Volver">
             <ArrowLeft size={18} />
@@ -292,7 +301,7 @@ export default function ProductDetail({ fetchById }) {
 
   if (!product) {
     return (
-      <div className="pdp container">
+      <div className="pdp-page pdp">
         <div className="pdp-top-actions">
           <button type="button" className="back-btn" onClick={() => navigate(-1)} aria-label="Volver">
             <ArrowLeft size={18} />
@@ -305,7 +314,7 @@ export default function ProductDetail({ fetchById }) {
   }
 
   return (
-    <div className="pdp container">
+    <div className="pdp-page pdp">
       <div className="pdp-top-actions">
         <button type="button" className="back-btn" onClick={() => navigate(-1)} aria-label="Volver">
           <ArrowLeft size={18} />
@@ -314,62 +323,68 @@ export default function ProductDetail({ fetchById }) {
       </div>
 
       {/* Galería */}
-      <section className={`pdp-gallery ${anim ? "is-animating" : ""}`}>
-        <Swiper
-          className="pdp-main-swiper"
-          modules={[Thumbs]}
-          spaceBetween={12}
-          loop={canLoop}
-          speed={600}
-          allowTouchMove={canLoop}
-          thumbs={{ swiper: thumbs && !thumbs.destroyed ? thumbs : null }}
-          onTransitionStart={handleStartAnim}
-          onTransitionEnd={handleEndAnim}
-        >
-          {images.map((src, i) => (
-            <SwiperSlide key={`main-${i}`}>
-              <div className="pdp-main" onMouseDown={(e) => e.preventDefault()}>
-                <img
-                  src={src}
-                  alt={`${product.name} ${i + 1}`}
-                  loading="eager"
-                  decoding="async"
-                  draggable={false}
-                  onError={(e) => {
-                    if (e.currentTarget.src !== FALLBACK) e.currentTarget.src = FALLBACK;
-                  }}
-                />
-              </div>
-            </SwiperSlide>
-          ))}
-        </Swiper>
+      <div className="pdp-left">
+        <section className={`pdp-gallery ${anim ? "is-animating" : ""}`}>
+          <Swiper
+            className="pdp-main-swiper"
+            modules={[Thumbs]}
+            spaceBetween={12}
+            loop={canLoop}
+            speed={600}
+            allowTouchMove={canLoop}
+            thumbs={{ swiper: thumbs && !thumbs.destroyed ? thumbs : null }}
+            onTransitionStart={handleStartAnim}
+            onTransitionEnd={handleEndAnim}
+          >
+            {images.map((src, i) => (
+              <SwiperSlide key={`main-${i}`}>
+                <div className="pdp-main" onMouseDown={(e) => e.preventDefault()}>
+                  <img
+                    src={src}
+                    alt={`${product.name} ${i + 1}`}
+                    loading="eager"
+                    decoding="async"
+                    draggable={false}
+                    onError={(e) => {
+                      if (e.currentTarget.src !== FALLBACK) e.currentTarget.src = FALLBACK;
+                    }}
+                  />
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
 
-        <Swiper
-          className="pdp-thumbs-swiper"
-          modules={[FreeMode, Navigation, Thumbs]}
-          onSwiper={setThumbs}
-          freeMode={false}
-          loop={canLoop}
-          navigation={canLoop ? { clickable: true } : false}
-          spaceBetween={8}
-          slidesPerView={Math.min(4, images.length)}
-          speed={600}
-          slideToClickedSlide={canLoop}
-          watchSlidesProgress={true}
-          preventClicks={true}
-          preventClicksPropagation={true}
-          onTransitionStart={handleStartAnim}
-          onTransitionEnd={handleEndAnim}
-        >
-          {images.map((src, i) => (
-            <SwiperSlide key={`thumb-${i}`}>
-              <button type="button" className="pdp-thumb" onMouseDown={(e) => e.preventDefault()}>
-                <img src={src} alt={`Miniatura ${i + 1}`} loading="lazy" draggable={false} />
-              </button>
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      </section>
+          <Swiper
+            className="pdp-thumbs-swiper"
+            modules={[FreeMode, Navigation, Thumbs]}
+            onSwiper={setThumbs}
+            freeMode={false}
+            loop={canLoop}
+            navigation={canLoop ? { clickable: true } : false}
+            spaceBetween={8}
+            slidesPerView={Math.min(4, images.length)}
+            speed={600}
+            slideToClickedSlide={canLoop}
+            watchSlidesProgress={true}
+            preventClicks={true}
+            preventClicksPropagation={true}
+            onTransitionStart={handleStartAnim}
+            onTransitionEnd={handleEndAnim}
+          >
+            {images.map((src, i) => (
+              <SwiperSlide key={`thumb-${i}`}>
+                <button type="button" className="pdp-thumb" onMouseDown={(e) => e.preventDefault()}>
+                  <img src={src} alt={`Miniatura ${i + 1}`} loading="lazy" draggable={false} />
+                </button>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </section>
+
+        <section className="pdp-reviews">
+          <ReviewsSections productId={id} />
+        </section>
+      </div>
 
       {/* Info */}
       <section className="pdp-info">
@@ -378,7 +393,7 @@ export default function ProductDetail({ fetchById }) {
         <div className="pdp-chips">
           {typeof product.stock === "number" && (
             <span className={`chip ${product.stock > 0 ? "ok" : "warn"}`}>
-              {product.stock > 0 ? `EN STOCK: ${product.stock}` : "SIN STOCK"}
+              {product.stock > 0 ? `CAPACIDAD: ${product.stock} HUESPEDES` : "SIN DISPONIBILIDAD"}
             </span>
           )}
           {product.category && <span className="chip ghost">{product.category}</span>}
@@ -417,22 +432,13 @@ export default function ProductDetail({ fetchById }) {
             </button>
           </div>
 
-          <div className="cta">
-            <button className="btn primary">Comprar ahora</button>
-            <button className="btn">Agregar al carrito</button>
-          </div>
         </div>
 
-        <ul className="pdp-perks">
-          <li>🚚 Envío a todo el país</li>
-          <li>🛡️ Garantía oficial 12 meses</li>
-          <li>💬 Soporte post-venta</li>
+                <ul className="pdp-perks">
+          <li>Check-in desde las 15:00</li>
+          <li>Cancelacion flexible segun tarifa</li>
+          <li>Atencion al huesped 24/7</li>
         </ul>
-
-        <div style={{ marginTop: 18 }}>
-          <ReviewsSections productId={id} />
-        </div>
-
         {/* Reservas */}
         <div style={{ marginTop: 18 }}>
           <div className="cal">
@@ -466,13 +472,14 @@ export default function ProductDetail({ fetchById }) {
                   modifiers={modifiers}
                   modifiersStyles={modifiersStyles}
                   fromMonth={from}
+                  toMonth={to}
                 />
 
                 <button
                   className="btn btn--primary"
                   onClick={goReserve}
-                  disabled={!range?.from || !range?.to}
-                  title={!range?.from || !range?.to ? "Seleccioná un rango" : "Ir a reservar"}
+                  disabled={!reservableId || !range?.from || !range?.to}
+                  title={!reservableId ? "Este alojamiento no es reservable" : !range?.from || !range?.to ? "Selecciona un rango" : "Ir a reservar"}
                 >
                   Ir a reservar
                 </button>
@@ -484,3 +491,5 @@ export default function ProductDetail({ fetchById }) {
     </div>
   );
 }
+
+

@@ -68,26 +68,13 @@ const onSubmit = async (e) => {
 
   setLoading(true);
   try {
-    const res = await fetch("http://localhost:8080/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        firstName: form.firstName.trim(),
-        lastName: form.lastName.trim(),
-        email: form.email.trim(),
-        password: form.password,
-      }),
+    await authApi.register({
+      firstName: form.firstName.trim(),
+      lastName: form.lastName.trim(),
+      email: form.email.trim(),
+      password: form.password,
     });
 
-    if (!res.ok) {
-      let msg = `HTTP ${res.status}`;
-      try {
-        const data = await res.json();
-        if (data?.message) msg = data.message;
-      } catch (_) {}
-      throw new Error(msg);
-    }
-    
     navigate("/login", { state: { justRegistered: true } });
   } catch (err) {
     setServerError(err.message || "No se pudo registrar");

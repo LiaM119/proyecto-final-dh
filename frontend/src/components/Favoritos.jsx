@@ -1,8 +1,32 @@
-// src/pages/Favoritos.jsx
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useFavorites } from "../context/FavoritesContext.jsx";
 import { productsApi } from "../api/products";
+import "../styles/Favoritos.css";
+
+const API_BASE = import.meta.env.VITE_API || "http://localhost:8080";
+
+function toAbsoluteUrl(u = "") {
+  if (!u) return "";
+  const s = String(u).replace(/\\/g, "/");
+  if (s.startsWith("http://") || s.startsWith("https://") || s.startsWith("data:")) return s;
+  if (s.startsWith("/uploads/")) return `${API_BASE}${s}`;
+  return `${API_BASE}/uploads/${s.replace(/^\/+/, "")}`;
+}
+
+function getCardImage(product) {
+  const raw = [
+    product?.imageUrls,
+    product?.imagesUrls,
+    product?.images,
+    product?.imageUrl,
+    product?.imagenUrl,
+    product?.image,
+  ].find((value) => value != null);
+
+  const first = Array.isArray(raw) ? raw[0] : raw;
+  return toAbsoluteUrl(first || "");
+}
 
 export default function Favoritos() {
   const { favoriteIds, loading: favLoading, toggle, isLogged } = useFavorites();
@@ -20,33 +44,24 @@ export default function Favoritos() {
         setLoadingProducts(true);
 
         const data = await productsApi.getAll?.();
-        const list = Array.isArray(data)
-          ? data
-          : Array.isArray(data?.content)
-          ? data.content
-          : [];
+        const list = Array.isArray(data) ? data : Array.isArray(data?.content) ? data.content : [];
 
         if (!alive) return;
         setProducts(list);
-      } catch (e) {
+      } catch {
         try {
           const r = await fetch("http://localhost:8080/api/products");
           const j = await r.json();
-          const list = Array.isArray(j)
-            ? j
-            : Array.isArray(j?.content)
-            ? j.content
-            : [];
+          const list = Array.isArray(j) ? j : Array.isArray(j?.content) ? j.content : [];
           if (!alive) return;
           setProducts(list);
         } catch {
           if (!alive) return;
-          setError("No se pudieron cargar los productos.");
+          setError("No se pudieron cargar los alojamientos.");
           setProducts([]);
         }
       } finally {
-        if (!alive) return;
-        setLoadingProducts(false);
+        if (alive) setLoadingProducts(false);
       }
     })();
 
@@ -62,107 +77,86 @@ export default function Favoritos() {
 
   if (!isLogged) {
     return (
-      <div style={{ padding: 24 }}>
-        <h1>Favoritos</h1>
-        <p>Tenés que iniciar sesión para ver tus favoritos.</p>
-        <Link to="/login">Ir a login</Link>
-      </div>
+      <main className="fav-page">
+        <section className="fav-shell">
+          <h1 className="fav-title">Favoritos</h1>
+          <p className="fav-copy">Tenes que iniciar sesion para ver tus favoritos.</p>
+          <Link to="/login" className="fav-link-btn">
+            Ir a login
+          </Link>
+        </section>
+      </main>
     );
   }
 
   if (favLoading || loadingProducts) {
-    return <div style={{ padding: 24 }}>Cargando favoritos...</div>;
+    return (
+      <main className="fav-page">
+        <section className="fav-shell">
+          <p className="fav-copy">Cargando favoritos...</p>
+        </section>
+      </main>
+    );
   }
 
   if (error) {
-    return <div style={{ padding: 24 }}>{error}</div>;
+    return (
+      <main className="fav-page">
+        <section className="fav-shell">
+          <p className="fav-error">{error}</p>
+        </section>
+      </main>
+    );
   }
 
   return (
-    <div style={{ padding: 24, maxWidth: 1100, margin: "0 auto" }}>
-      <h1 style={{ marginBottom: 12 }}>Mis favoritos</h1>
+    <main className="fav-page">
+      <section className="fav-shell">
+        <h1 className="fav-title">Mis favoritos</h1>
 
-      {favoriteIds.size === 0 ? (
-        <div style={{ padding: 16, border: "1px solid #333", borderRadius: 12 }}>
-          Todavía no marcaste ningún producto como favorito.
-        </div>
-      ) : favoritesList.length === 0 ? (
-        <div style={{ padding: 16, border: "1px solid #333", borderRadius: 12 }}>
-          Tenés favoritos guardados, pero no se pudieron emparejar con productos.
-          <br />
-          (Esto suele pasar si el backend cambió IDs o si el listado viene paginado y no trae todos.)
-        </div>
-      ) : (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-            gap: 16,
-          }}
-        >
-          {favoritesList.map((p) => (
-            <div
-              key={p.id}
-              style={{
-                border: "1px solid #333",
-                borderRadius: 14,
-                padding: 12,
-                background: "rgba(255,255,255,0.02)",
-              }}
-            >
-              <div style={{ fontWeight: 700, marginBottom: 8 }}>
-                {p.title || p.titulo || p.name || p.nombre || "Producto"}
-              </div>
+        {favoriteIds.size === 0 ? (
+          <div className="fav-empty">Todavia no marcaste ningun alojamiento como favorito.</div>
+        ) : favoritesList.length === 0 ? (
+          <div className="fav-empty">
+            Tenes favoritos guardados, pero no se pudieron emparejar con alojamientos.
+          </div>
+        ) : (
+          <div className="fav-grid">
+            {favoritesList.map((p) => {
+              const image = getCardImage(p);
+              const title = p.title || p.titulo || p.name || p.nombre || "Alojamiento";
 
-              {p.imageUrl || p.imagenUrl ? (
-                <img
-                  src={p.imageUrl || p.imagenUrl}
-                  alt={p.title || p.titulo || p.name || p.nombre || "Producto"}
-                  style={{
-                    width: "100%",
-                    height: 140,
-                    objectFit: "cover",
-                    borderRadius: 12,
-                    marginBottom: 10,
-                  }}
-                />
-              ) : null}
+              return (
+                <article key={p.id} className="fav-card">
+                  {image ? (
+                    <img src={image} alt={title} className="fav-card-img" loading="lazy" />
+                  ) : (
+                    <div className="fav-card-placeholder">Sin imagen</div>
+                  )}
 
-              <div style={{ display: "flex", gap: 10 }}>
-                <Link
-                  to={`/productos/${p.id}`}
-                  style={{
-                    flex: 1,
-                    textAlign: "center",
-                    padding: "10px 12px",
-                    borderRadius: 10,
-                    border: "1px solid #444",
-                    textDecoration: "none",
-                    color: "inherit",
-                  }}
-                >
-                  Ver
-                </Link>
+                  <div className="fav-card-body">
+                    <h3 className="fav-card-title">{title}</h3>
 
-                <button
-                  onClick={() => toggle(p.id)}
-                  style={{
-                    padding: "10px 12px",
-                    borderRadius: 10,
-                    border: "1px solid #ff6b6b",
-                    background: "transparent",
-                    color: "inherit",
-                    cursor: "pointer",
-                  }}
-                  title="Quitar de favoritos"
-                >
-                  Quitar
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+                    <div className="fav-actions">
+                      <Link to={`/alojamientos/${p.id}`} className="fav-btn fav-btn-view">
+                        Ver
+                      </Link>
+
+                      <button
+                        onClick={() => toggle(p.id)}
+                        className="fav-btn fav-btn-remove"
+                        title="Quitar de favoritos"
+                      >
+                        Quitar
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
+    </main>
   );
 }

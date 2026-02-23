@@ -15,6 +15,7 @@ public class ProductDTO {
     // Categoría (nuevo)
     private Long categoryId;
     private String categoryName;
+    private Long reservableId;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -39,4 +40,7 @@ public class ProductDTO {
 
     public String getCategoryName() { return categoryName; }
     public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
+
+    public Long getReservableId() { return reservableId; }
+    public void setReservableId(Long reservableId) { this.reservableId = reservableId; }
 }

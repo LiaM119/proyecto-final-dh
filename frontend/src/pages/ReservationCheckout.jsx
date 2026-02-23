@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { api } from "../services/api";
+import { reservationsApi } from "../api/reservations";
 
 export default function ReservationCheckout() {
   const [params] = useSearchParams();
@@ -23,7 +23,7 @@ export default function ReservationCheckout() {
     setLoading(true);
     setMsg("");
     try {
-      await api.createReservation(payload);
+      await reservationsApi.createReservation(payload);
       setMsg("✅ Reserva confirmada.");
       setTimeout(() => nav(`/reservables/${reservableId}`), 800);
     } catch (e) {

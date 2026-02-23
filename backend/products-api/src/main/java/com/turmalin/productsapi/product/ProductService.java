@@ -2,17 +2,26 @@ package com.turmalin.productsapi.product;
 
 import com.turmalin.productsapi.category.Category;
 import com.turmalin.productsapi.category.CategoryRepository;
+import com.turmalin.productsapi.favorites.FavoriteRepository;
 import com.turmalin.productsapi.product.dto.ProductDTO;
+import com.turmalin.productsapi.reservables.model.Reservable;
+import com.turmalin.productsapi.reservables.repository.ReservableRepository;
+import com.turmalin.productsapi.review.ReviewRepository;
 import com.turmalin.productsapi.storage.FileStorageService;
+import com.tuapp.reservables.model.ReservableType;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
+import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Service
@@ -21,13 +30,22 @@ public class ProductService {
     private final ProductRepository repo;
     private final FileStorageService storage;
     private final CategoryRepository categoryRepository;
+    private final ReservableRepository reservableRepository;
+    private final ReviewRepository reviewRepository;
+    private final FavoriteRepository favoriteRepository;
 
     public ProductService(ProductRepository repo,
                           FileStorageService storage,
-                          CategoryRepository categoryRepository) {
+                          CategoryRepository categoryRepository,
+                          ReservableRepository reservableRepository,
+                          ReviewRepository reviewRepository,
+                          FavoriteRepository favoriteRepository) {
         this.repo = repo;
         this.storage = storage;
         this.categoryRepository = categoryRepository;
+        this.reservableRepository = reservableRepository;
+        this.reviewRepository = reviewRepository;
+        this.favoriteRepository = favoriteRepository;
     }
 
     public boolean existsByName(String name) {
@@ -44,7 +62,7 @@ public class ProductService {
     ) throws IOException {
 
         if (repo.existsByNameIgnoreCase(name)) {
-            throw new IllegalStateException("El nombre del producto ya existe");
+            throw new IllegalStateException("El nombre del alojamiento ya existe");
         }
 
         Product p = new Product();
@@ -68,7 +86,8 @@ public class ProductService {
             }
         }
 
-        repo.save(p);
+        p = repo.save(p);
+        p = ensureReservableLinked(p);
         return toDto(p);
     }
 
@@ -105,19 +124,40 @@ public class ProductService {
             }
         }
 
+        p = repo.save(p);
+        p = ensureReservableLinked(p);
         return toDto(p);
     }
 
     public List<ProductDTO> findAll() {
-        return repo.findAll().stream().map(this::toDto).toList();
+        return repo.findAll().stream()
+                .map(this::ensureReservableLinked)
+                .map(this::toDto)
+                .toList();
     }
 
     public Optional<ProductDTO> findById(Long id) {
-        return repo.findById(id).map(this::toDto);
+        return repo.findById(id)
+                .map(this::ensureReservableLinked)
+                .map(this::toDto);
     }
 
+    @Transactional
     public void delete(Long id) {
-        repo.deleteById(id);
+        Product product = repo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Alojamiento no encontrado"));
+
+        try {
+            reviewRepository.deleteByProductId(id);
+            repo.deleteUserFavoritesByProductId(id);
+            favoriteRepository.deleteByProductId(id);
+            repo.delete(product);
+        } catch (DataIntegrityViolationException ex) {
+            throw new ResponseStatusException(
+                    CONFLICT,
+                    "No se puede eliminar el alojamiento porque tiene datos asociados"
+            );
+        }
     }
 
     // ===== mapper =====
@@ -129,6 +169,7 @@ public class ProductService {
         dto.setPrice(p.getPrice());
         dto.setStock(p.getStock());
         dto.setImageUrls(p.getImageUrls());
+        dto.setReservableId(p.getReservableId());
 
         if (p.getCategory() != null) {
             dto.setCategoryId(p.getCategory().getId());
@@ -139,5 +180,44 @@ public class ProductService {
         }
         return dto;
     }
+
+    private Product ensureReservableLinked(Product p) {
+        if (p == null) return null;
+
+        Reservable reservable = null;
+        if (p.getReservableId() != null) {
+            reservable = reservableRepository.findById(p.getReservableId()).orElse(null);
+        }
+
+        if (reservable == null) {
+            reservable = new Reservable();
+            reservable.setType(ReservableType.PRODUCT);
+            reservable.setName(p.getName());
+            reservable.setDescription(p.getDescription());
+            reservable = reservableRepository.save(reservable);
+
+            p.setReservableId(reservable.getId());
+            return repo.save(p);
+        }
+
+        boolean changed = false;
+        if (reservable.getType() != ReservableType.PRODUCT) {
+            reservable.setType(ReservableType.PRODUCT);
+            changed = true;
+        }
+        if (!Objects.equals(reservable.getName(), p.getName())) {
+            reservable.setName(p.getName());
+            changed = true;
+        }
+        if (!Objects.equals(reservable.getDescription(), p.getDescription())) {
+            reservable.setDescription(p.getDescription());
+            changed = true;
+        }
+        if (changed) {
+            reservableRepository.save(reservable);
+        }
+        return p;
+    }
 }
+
 

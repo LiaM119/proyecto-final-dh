@@ -1,51 +1,40 @@
-// src/api/reviews.js
-import { request } from "./http";
+import { http } from "./http";
 
-async function tryMany(paths, options) {
-  let lastErr = null;
-
-  for (const p of paths) {
-    try {
-      return await request(p, options);
-    } catch (e) {
-      lastErr = e;
-    }
-  }
-
-  throw lastErr || new Error("Error inesperado");
+function shouldTryLegacy(err) {
+  return err?.status === 404 || err?.status === 405;
 }
 
 export const reviewsApi = {
   async getByProduct(productId) {
-    return tryMany(
-      [
-        `/api/reviews/product/${productId}`,
-        `/api/products/${productId}/reviews`,
-      ],
-      { method: "GET" }
-    );
+    const modern = `/api/products/${productId}/reviews`;
+    const legacy = `/api/reviews/product/${productId}`;
+
+    try {
+      return await http.get(modern);
+    } catch (modernErr) {
+      if (!shouldTryLegacy(modernErr)) throw modernErr;
+    }
+
+    return http.get(legacy);
   },
 
   async upsertMine(productId, payload) {
-    return tryMany(
-      [
-        `/api/reviews/product/${productId}`,
-        `/api/products/${productId}/reviews`,
-      ],
-      {
-        method: "POST",
-        body: JSON.stringify(payload),
-      }
-    );
+    try {
+      return await http.postJson(`/api/products/${productId}/reviews`, payload);
+    } catch (modernErr) {
+      if (!shouldTryLegacy(modernErr)) throw modernErr;
+    }
+
+    return http.postJson(`/api/reviews/product/${productId}`, payload);
   },
 
   async deleteMine(productId) {
-    return tryMany(
-      [
-        `/api/reviews/product/${productId}`,
-        `/api/products/${productId}/reviews`,
-      ],
-      { method: "DELETE" }
-    );
+    try {
+      return await http.del(`/api/products/${productId}/reviews/me`);
+    } catch (modernErr) {
+      if (!shouldTryLegacy(modernErr)) throw modernErr;
+    }
+
+    return http.del(`/api/reviews/product/${productId}`);
   },
 };

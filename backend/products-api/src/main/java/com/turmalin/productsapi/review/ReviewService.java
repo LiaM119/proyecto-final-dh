@@ -26,7 +26,7 @@ public class ReviewService {
     @Transactional(readOnly = true)
     public ReviewsSummaryResponse getReviews(Long productId, User currentUserOrNull) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Alojamiento no encontrado"));
 
         List<Review> reviews = reviewRepository.findByProductIdOrderByCreatedAtDesc(productId);
 
@@ -48,9 +48,18 @@ public class ReviewService {
                 .build()
         ).toList();
 
+        boolean canReview = false;
+        if (currentUserOrNull != null && product.getReservableId() != null) {
+            canReview = reservationReviewChecker.canReview(
+                    currentUserOrNull.getId(),
+                    product.getReservableId()
+            );
+        }
+
         return ReviewsSummaryResponse.builder()
                 .averageRating(round1(avg))
                 .totalReviews(total)
+                .canReview(canReview)
                 .reviews(mapped)
                 .build();
     }
@@ -58,16 +67,23 @@ public class ReviewService {
     @Transactional
     public ReviewResponse upsertMyReview(Long productId, ReviewRequest req, User currentUser) {
         if (req.getRating() == null || req.getRating() < 1 || req.getRating() > 5) {
-            throw new IllegalArgumentException("La puntuación debe estar entre 1 y 5");
+            throw new IllegalArgumentException("La puntuacion debe estar entre 1 y 5");
         }
 
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Alojamiento no encontrado"));
 
-        boolean canReview = reservationReviewChecker.canReview(currentUser.getId(), productId);
+        if (product.getReservableId() == null) {
+            throw new IllegalStateException("Este alojamiento no tiene un reservable asociado");
+        }
+
+        boolean canReview = reservationReviewChecker.canReview(
+                currentUser.getId(),
+                product.getReservableId()
+        );
 
         if (!canReview) {
-            throw new AccessDeniedException("Solo podés valorar si ya finalizaste una reserva de este producto");
+            throw new AccessDeniedException("Solo podes valorar si tenes una reserva de este alojamiento");
         }
 
         Review review = reviewRepository.findByProductIdAndUserId(productId, currentUser.getId())
@@ -104,3 +120,4 @@ public class ReviewService {
         return Math.round(v * 10.0) / 10.0;
     }
 }
+

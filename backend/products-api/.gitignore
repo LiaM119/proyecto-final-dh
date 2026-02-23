@@ -33,3 +33,4 @@ build/
 .vscode/
 
 /backend/products-api/data/
+.env.properties

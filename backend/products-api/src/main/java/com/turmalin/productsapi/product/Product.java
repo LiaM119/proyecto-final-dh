@@ -42,6 +42,9 @@ public class Product {
     @JoinColumn(name = "category_id")
     private Category category;
 
+    @Column(name = "reservable_id")
+    private Long reservableId;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -62,6 +65,9 @@ public class Product {
 
     public Category getCategory() { return category; }
     public void setCategory(Category category) { this.category = category; }
+
+    public Long getReservableId() { return reservableId; }
+    public void setReservableId(Long reservableId) { this.reservableId = reservableId; }
 
     public void addImage(String url) {
         if (this.imageUrls == null) this.imageUrls = new ArrayList<>();

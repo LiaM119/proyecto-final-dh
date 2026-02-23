@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import StarRating from "./StarRating";
 import { reviewsApi } from "../api/reviews";
 
@@ -8,20 +8,33 @@ const isLoggedIn = () => !!localStorage.getItem(AUTH_TOKEN_KEY);
 function formatDate(iso) {
   if (!iso) return "";
   const d = new Date(iso);
-  return d.toLocaleDateString("es-AR", { year: "numeric", month: "2-digit", day: "2-digit" });
+  return d.toLocaleDateString("es-AR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
 }
 
-function normalizeError(e) {
+function normalizeError(err, context = "read") {
+  const status = err?.status;
+  const msg = err?.message || "Error inesperado";
 
-  const status = e?.status;
-  const msg = e?.message || "Error inesperado";
+  if (status === 401) {
+    return context === "write"
+      ? "Tenés que iniciar sesión para puntuar."
+      : "No se pudo obtener el resumen de reseñas.";
+  }
 
-  if (status === 401) return "Tenés que iniciar sesión para puntuar.";
-  if (status === 403) return "Solo podés puntuar si finalizaste una reserva de este producto.";
+  if (status === 403) {
+    return context === "write"
+      ? "Solo podes puntuar si tenes una reserva de este alojamiento."
+      : "No se pudieron cargar las reseñas para este alojamiento.";
+  }
+
   return msg;
 }
 
-export default function ReviewsSection({ productId }) {
+export default function ReviewsSections({ productId }) {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [data, setData] = useState(null);
@@ -37,9 +50,16 @@ export default function ReviewsSection({ productId }) {
     return data.reviews.find((r) => r.mine);
   }, [data]);
 
+  const canWriteReview = useMemo(() => {
+    if (!logged) return false;
+    if (myReview) return true;
+    return data?.canReview === true;
+  }, [logged, myReview, data?.canReview]);
+
   async function load() {
     setLoading(true);
     setErr("");
+
     try {
       const res = await reviewsApi.getByProduct(productId);
       setData(res);
@@ -53,7 +73,7 @@ export default function ReviewsSection({ productId }) {
         setMyComment("");
       }
     } catch (e) {
-      setErr(normalizeError(e) || "No se pudieron cargar las reseñas");
+      setErr(normalizeError(e, "read") || "No se pudieron cargar las reseñas");
     } finally {
       setLoading(false);
     }
@@ -61,6 +81,7 @@ export default function ReviewsSection({ productId }) {
 
   useEffect(() => {
     if (productId) load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId]);
 
   async function saveReview() {
@@ -75,7 +96,10 @@ export default function ReviewsSection({ productId }) {
       await reviewsApi.upsertMine(productId, { rating: myRating, comment: myComment });
       await load();
     } catch (e) {
-      setErr(normalizeError(e) || "No se pudo guardar la reseña");
+      if (e?.status === 403) {
+        setData((prev) => (prev ? { ...prev, canReview: false } : prev));
+      }
+      setErr(normalizeError(e, "write") || "No se pudo guardar la reseña");
     } finally {
       setSaving(false);
     }
@@ -84,27 +108,37 @@ export default function ReviewsSection({ productId }) {
   async function deleteReview() {
     setErr("");
     setSaving(true);
+
     try {
       await reviewsApi.deleteMine(productId);
       await load();
     } catch (e) {
-      setErr(normalizeError(e) || "No se pudo borrar tu reseña");
+      if (e?.status === 403) {
+        setData((prev) => (prev ? { ...prev, canReview: false } : prev));
+      }
+      setErr(normalizeError(e, "write") || "No se pudo borrar tu reseña");
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <section className="reviews card" style={{ marginTop: 16 }}>
+    <section className="reviews card">
       <div className="reviewsHead">
         <div>
           <h3 style={{ margin: 0 }}>Valoraciones</h3>
 
-          <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <div
+            style={{
+              marginTop: 10,
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              flexWrap: "wrap",
+            }}
+          >
             <StarRating value={data?.averageRating || 0} readOnly showValue />
-            <span style={{ opacity: 0.8 }}>
-              {data?.totalReviews || 0} opinión(es)
-            </span>
+            <span style={{ opacity: 0.8 }}>{data?.totalReviews || 0} opinión(es)</span>
           </div>
         </div>
       </div>
@@ -127,15 +161,20 @@ export default function ReviewsSection({ productId }) {
             </div>
           )}
 
-          {/* ===== Tu reseña ===== */}
           <div className="reviewsMine" style={{ marginTop: 16 }}>
             <h4 style={{ margin: "0 0 10px 0" }}>Tu reseña</h4>
 
-            {!logged ? (
-              <div style={{ opacity: 0.8 }}>
-                Iniciá sesión para puntuar y escribir una reseña.
+            {!logged && (
+              <div style={{ opacity: 0.8 }}>Iniciá sesión para puntuar y escribir una reseña.</div>
+            )}
+
+            {logged && !canWriteReview && (
+              <div style={{ opacity: 0.82 }}>
+                Solo podes opinar si tenes una reserva confirmada de este alojamiento.
               </div>
-            ) : (
+            )}
+
+            {logged && canWriteReview && (
               <>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                   <StarRating value={myRating} onChange={setMyRating} size={20} />
@@ -172,10 +211,6 @@ export default function ReviewsSection({ productId }) {
                     </button>
                   )}
                 </div>
-
-                <div style={{ marginTop: 8, fontSize: 13, opacity: 0.75 }}>
-                  * Si no finalizaste una reserva, el backend lo va a bloquear (y te va a mostrar el mensaje).
-                </div>
               </>
             )}
           </div>
@@ -197,7 +232,14 @@ export default function ReviewsSection({ productId }) {
                       background: "rgba(0,0,0,.10)",
                     }}
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: 12,
+                        flexWrap: "wrap",
+                      }}
+                    >
                       <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                         <StarRating value={r.rating} readOnly />
                         <strong style={{ opacity: 0.95 }}>{r.userName || r.userEmail}</strong>
@@ -233,3 +275,4 @@ export default function ReviewsSection({ productId }) {
     </section>
   );
 }
+
