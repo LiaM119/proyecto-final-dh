@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public class ProductDTO {
+    public record AmenityItem(Long id, String name, String description, String icon) {}
 
     private Long id;
     private String name;
@@ -15,6 +16,8 @@ public class ProductDTO {
     // Categoría (nuevo)
     private Long categoryId;
     private String categoryName;
+    private List<Long> amenityIds;
+    private List<AmenityItem> amenities;
     private Long reservableId;
 
     public Long getId() { return id; }
@@ -40,6 +43,12 @@ public class ProductDTO {
 
     public String getCategoryName() { return categoryName; }
     public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
+
+    public List<Long> getAmenityIds() { return amenityIds; }
+    public void setAmenityIds(List<Long> amenityIds) { this.amenityIds = amenityIds; }
+
+    public List<AmenityItem> getAmenities() { return amenities; }
+    public void setAmenities(List<AmenityItem> amenities) { this.amenities = amenities; }
 
     public Long getReservableId() { return reservableId; }
     public void setReservableId(Long reservableId) { this.reservableId = reservableId; }

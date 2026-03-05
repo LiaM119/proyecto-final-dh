@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -41,40 +40,32 @@ public class ProductController {
     public List<ProductDTO> list() { return service.findAll(); }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> create(
+    public ResponseEntity<ProductDTO> create(
             @RequestParam("name") String name,
             @RequestParam("description") String description,
             @RequestParam("price") BigDecimal price,
             @RequestParam("stock") Integer stock,
             @RequestParam(value = "categoryId", required = false) Long categoryId,
+            @RequestParam(value = "amenityIds", required = false) List<Long> amenityIds,
             @RequestPart(value = "images", required = false) List<MultipartFile> images
     ) {
-        try {
-            ProductDTO dto = service.create(name, description, price, stock, categoryId, images);
-            return ResponseEntity.status(HttpStatus.CREATED).body(dto);
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "Nombre duplicado"));
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Error al procesar las imagenes"));
-        }
+        ProductDTO dto = service.create(name, description, price, stock, categoryId, amenityIds, images);
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> update(
+    public ResponseEntity<ProductDTO> update(
             @PathVariable Long id,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam(value = "price", required = false) BigDecimal price,
             @RequestParam(value = "stock", required = false) Integer stock,
             @RequestParam(value = "categoryId", required = false) Long categoryId,
+            @RequestParam(value = "amenityIds", required = false) List<Long> amenityIds,
             @RequestPart(value = "images", required = false) List<MultipartFile> images
     ) {
-        try {
-            ProductDTO dto = service.update(id, name, description, price, stock, categoryId, images);
-            return ResponseEntity.ok(dto);
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Error al procesar las imagenes"));
-        }
+        ProductDTO dto = service.update(id, name, description, price, stock, categoryId, amenityIds, images);
+        return ResponseEntity.ok(dto);
     }
 
     @DeleteMapping("/{id}")

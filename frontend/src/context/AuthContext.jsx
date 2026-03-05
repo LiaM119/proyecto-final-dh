@@ -34,6 +34,30 @@ export default function AuthProvider({ children }) {
     return localStorage.getItem("turmalin:token") || "";
   });
 
+  useEffect(() => {
+    let alive = true;
+
+    const syncSession = async () => {
+      if (!token) return;
+
+      try {
+        const serverUser = await authApi.me();
+        if (!alive) return;
+        setUser(normalizeUser(serverUser));
+      } catch {
+        if (!alive) return;
+        setUser(null);
+        setToken("");
+      }
+    };
+
+    syncSession();
+
+    return () => {
+      alive = false;
+    };
+  }, [token]);
+
   // ==================== SYNC LOCALSTORAGE ====================
   useEffect(() => {
     if (user) localStorage.setItem("turmalin:user", JSON.stringify(user));

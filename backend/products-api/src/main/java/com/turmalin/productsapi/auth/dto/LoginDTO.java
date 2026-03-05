@@ -1,9 +1,15 @@
 // src/main/java/com/turmalin/productsapi/auth/dto/LoginDTO.java
 package com.turmalin.productsapi.auth.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
 public class LoginDTO {
 
+    @NotBlank(message = "El email es obligatorio")
+    @Email(message = "El email no tiene un formato valido")
     private String email;
+    @NotBlank(message = "La contrasena es obligatoria")
     private String password;
 
     public LoginDTO() {

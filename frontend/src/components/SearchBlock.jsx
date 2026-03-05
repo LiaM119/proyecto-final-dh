@@ -4,9 +4,10 @@ import { format } from "date-fns";
 import "react-day-picker/dist/style.css";
 import "../styles/SearchBlock.css";
 
-export default function SearchBlock({ products = [], onSearch }) {
+export default function SearchBlock({ products = [], categories = [], onSearch }) {
   const [q, setQ] = useState("");
   const [range, setRange] = useState(undefined); // { from: Date, to: Date }
+  const [categoryId, setCategoryId] = useState("");
   const [openSug, setOpenSug] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
 
@@ -55,27 +56,13 @@ export default function SearchBlock({ products = [], onSearch }) {
     return () => document.removeEventListener("mousedown", onDown);
   }, []);
 
-  const inRange = (date, from, to) => {
-    if (!date) return true;
-    const d = new Date(date);
-    d.setHours(0, 0, 0, 0);
-    const f = from ? new Date(from) : null;
-    const t = to ? new Date(to) : null;
-    if (f) f.setHours(0, 0, 0, 0);
-    if (t) t.setHours(0, 0, 0, 0);
-
-    if (f && t) return d >= f && d <= t;
-    if (f && !t) return d >= f;
-    if (!f && t) return d <= t;
-    return true;
-  };
-
   const doSearch = (forcedText) => {
     const text = (forcedText ?? q).trim();
     const nq = norm(text);
 
     const from = range?.from ?? null;
     const to = range?.to ?? null;
+    const numericCategoryId = Number(categoryId);
 
     const results = products
       .map((p) => {
@@ -94,15 +81,17 @@ export default function SearchBlock({ products = [], onSearch }) {
           score = 1; 
         }
 
-        const okDate = p?.createdAt ? inRange(p.createdAt, from, to) : true;
+        const productCategoryId = Number(p?.categoryId ?? p?.category?.id);
+        const okCategory =
+          !numericCategoryId || (Number.isFinite(productCategoryId) && productCategoryId === numericCategoryId);
 
-        return { p, hay: nq ? hay : true, okDate, score };
+        return { p, hay: nq ? hay : true, okCategory, score };
       })
-      .filter((x) => x.hay && x.okDate)
+      .filter((x) => x.hay && x.okCategory)
       .sort((a, b) => b.score - a.score)
       .map((x) => x.p);
 
-    onSearch?.(results, { q: text, from, to });
+    onSearch?.(results, { q: text, from, to, categoryId: numericCategoryId || null });
     setOpenSug(false);
     setActiveIdx(-1);
   };
@@ -196,6 +185,22 @@ export default function SearchBlock({ products = [], onSearch }) {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="sb__field">
+          <label className="sb__label">Categoria</label>
+          <select
+            className="sb__input"
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
+          >
+            <option value="">Todas las categorias</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="sb__field">

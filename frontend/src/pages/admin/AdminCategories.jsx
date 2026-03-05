@@ -12,6 +12,12 @@ export default function AdminCategories() {
   const [productCount, setProductCount] = useState(null);
   const [force, setForce] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [formName, setFormName] = useState("");
+  const [formDescription, setFormDescription] = useState("");
+  const [formSlug, setFormSlug] = useState("");
+  const [savingForm, setSavingForm] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -46,6 +52,66 @@ export default function AdminCategories() {
     }
   }
 
+  function openCreate() {
+    setEditing(null);
+    setFormName("");
+    setFormDescription("");
+    setFormSlug("");
+    setErr("");
+    setFormOpen(true);
+  }
+
+  function openEdit(cat) {
+    setEditing(cat);
+    setFormName(cat?.name || "");
+    setFormDescription(cat?.description || "");
+    setFormSlug(cat?.slug || "");
+    setErr("");
+    setFormOpen(true);
+  }
+
+  function closeForm() {
+    if (savingForm) return;
+    setFormOpen(false);
+    setEditing(null);
+    setFormName("");
+    setFormDescription("");
+    setFormSlug("");
+  }
+
+  async function saveForm(e) {
+    e.preventDefault();
+    const name = formName.trim();
+    if (!name) {
+      setErr("El nombre es obligatorio.");
+      return;
+    }
+
+    setSavingForm(true);
+    setErr("");
+
+    try {
+      const payload = {
+        name,
+        description: formDescription.trim(),
+        slug: formSlug.trim(),
+      };
+
+      if (editing?.id) {
+        await categoriesApi.update(editing.id, payload);
+      } else {
+        await categoriesApi.create(payload);
+      }
+
+      closeForm();
+      await load();
+    } catch (e2) {
+      setErr(typeof e2 === "string" ? e2 : e2?.message || "No se pudo guardar el tipo.");
+    } finally {
+      setSavingForm(false);
+    }
+  }
+
   function closeModal() {
     if (deleting) return;
     setOpen(false);
@@ -76,9 +142,14 @@ export default function AdminCategories() {
     <div className="admin-cats">
       <div className="admin-cats__head">
         <h2>Tipos de alojamiento</h2>
-        <button className="admin-cats__btn" type="button" onClick={load} disabled={loading}>
-          Recargar
-        </button>
+        <div className="admin-cats__actions">
+          <button className="admin-cats__btn" type="button" onClick={openCreate} disabled={loading}>
+            Nuevo tipo
+          </button>
+          <button className="admin-cats__btn" type="button" onClick={load} disabled={loading}>
+            Recargar
+          </button>
+        </div>
       </div>
 
       {loading && <p className="admin-cats__muted">Cargando...</p>}
@@ -102,6 +173,13 @@ export default function AdminCategories() {
               <div>{c.name}</div>
               <div className="admin-cats__right">
                 <button
+                  className="admin-cats__btn"
+                  type="button"
+                  onClick={() => openEdit(c)}
+                >
+                  Editar
+                </button>
+                <button
                   className="admin-cats__btn admin-cats__btn--danger"
                   type="button"
                   onClick={() => openDelete(c)}
@@ -111,6 +189,61 @@ export default function AdminCategories() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {formOpen && (
+        <div className="admin-modal-backdrop" onMouseDown={closeForm}>
+          <div className="admin-modal" onMouseDown={(e) => e.stopPropagation()}>
+            <div className="admin-modal__title">
+              {editing ? "Editar tipo de alojamiento" : "Nuevo tipo de alojamiento"}
+            </div>
+
+            <form className="admin-cats__form" onSubmit={saveForm}>
+              <label>
+                <span>Nombre</span>
+                <input
+                  className="input"
+                  value={formName}
+                  onChange={(e) => setFormName(e.target.value)}
+                  disabled={savingForm}
+                  autoFocus
+                />
+              </label>
+
+              <label>
+                <span>Descripcion</span>
+                <input
+                  className="input"
+                  value={formDescription}
+                  onChange={(e) => setFormDescription(e.target.value)}
+                  disabled={savingForm}
+                />
+              </label>
+
+              <label>
+                <span>Slug</span>
+                <input
+                  className="input"
+                  value={formSlug}
+                  onChange={(e) => setFormSlug(e.target.value)}
+                  disabled={savingForm}
+                  placeholder="ej: cabaña-premium"
+                />
+              </label>
+
+              {err && <p className="admin-cats__error">{err}</p>}
+
+              <div className="admin-modal__actions">
+                <button className="admin-cats__btn" type="button" onClick={closeForm} disabled={savingForm}>
+                  Cancelar
+                </button>
+                <button className="admin-cats__btn" type="submit" disabled={savingForm}>
+                  {savingForm ? "Guardando..." : editing ? "Guardar cambios" : "Crear tipo"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 

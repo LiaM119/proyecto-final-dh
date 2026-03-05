@@ -4,6 +4,7 @@ import com.turmalin.productsapi.auth.User;
 import com.turmalin.productsapi.review.dto.ReviewRequest;
 import com.turmalin.productsapi.review.dto.ReviewResponse;
 import com.turmalin.productsapi.review.dto.ReviewsSummaryResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,7 +28,7 @@ public class ReviewController {
     @PostMapping
     public ResponseEntity<ReviewResponse> upsertMyReview(
             @PathVariable Long productId,
-            @RequestBody ReviewRequest req,
+            @Valid @RequestBody ReviewRequest req,
             @AuthenticationPrincipal User user
     ) {
         return ResponseEntity.ok(reviewService.upsertMyReview(productId, req, user));

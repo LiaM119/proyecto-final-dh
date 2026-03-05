@@ -1,6 +1,7 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { productsApi } from "../../api/products";
+import { amenitiesApi } from "../../api/amenities";
 import CategorySelect from "../../components/CategorySelect";
 import "../../styles/AdminPanel.css";
 
@@ -23,6 +24,7 @@ const emptyForm = {
   imageUrls: [],
   categoryId: null,
   categoryName: "",
+  amenityIds: [],
 };
 
 export default function AddProduct() {
@@ -35,9 +37,9 @@ export default function AddProduct() {
   const [loading, setLoading] = useState(!!routeId);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-
-  const [files, setFiles] = useState([]); 
-  const [previews, setPreviews] = useState([]); 
+  const [files, setFiles] = useState([]);
+  const [previews, setPreviews] = useState([]);
+  const [amenities, setAmenities] = useState([]);
 
   useEffect(() => {
     if (!routeId) return;
@@ -64,6 +66,11 @@ export default function AddProduct() {
           imageUrls: Array.isArray(p.imageUrls) ? p.imageUrls : [],
           categoryId: catId,
           categoryName: catName,
+          amenityIds: Array.isArray(p.amenityIds)
+            ? p.amenityIds.map(Number).filter((n) => Number.isFinite(n))
+            : Array.isArray(p.amenities)
+            ? p.amenities.map((a) => Number(a?.id)).filter((n) => Number.isFinite(n))
+            : [],
         });
       } catch (e) {
         console.error(e);
@@ -78,45 +85,64 @@ export default function AddProduct() {
   }, [routeId]);
 
   useEffect(() => {
-    return () => previews.forEach((url) => URL.revokeObjectURL(url));
-  }, [previews]);
+    let active = true;
+    (async () => {
+      try {
+        const data = await amenitiesApi.getAll();
+        if (!active) return;
+        setAmenities(Array.isArray(data) ? data : []);
+      } catch {
+        if (!active) return;
+        setAmenities([]);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => () => previews.forEach((url) => URL.revokeObjectURL(url)), [previews]);
 
   const onPickFiles = (e) => {
     const sel = Array.from(e.target.files || []);
-    previews.forEach((url) => URL.revokeObjectURL(url)); 
+    previews.forEach((url) => URL.revokeObjectURL(url));
     setFiles(sel);
-    const urls = sel.map((f) => URL.createObjectURL(f));
-    setPreviews(urls);
+    setPreviews(sel.map((f) => URL.createObjectURL(f)));
   };
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (!form.name.trim()) return setError("El nombre es obligatorio");
-    if (Number.isNaN(Number(form.price))) return setError("Precio inválido");
-    if (Number.isNaN(Number(form.stock))) return setError("Capacidad invalida");
+    const price = Number(form.price);
+    const stock = Number(form.stock);
+
+    if (!form.name.trim()) return setError("El nombre es obligatorio.");
+    if (!form.description.trim()) return setError("La descripcion es obligatoria.");
+    if (!Number.isFinite(price) || price <= 0) return setError("El precio debe ser mayor a 0.");
+    if (!Number.isFinite(stock) || stock <= 0) return setError("La capacidad debe ser mayor a 0.");
+    if (!Number.isInteger(stock)) return setError("La capacidad debe ser un numero entero.");
+    if (!form.categoryId) return setError("Debes seleccionar una categoria.");
+    if (!routeId && files.length === 0) return setError("Debes subir al menos una imagen.");
 
     try {
       setSaving(true);
       const payload = {
         name: form.name.trim(),
         description: form.description.trim(),
-        price: Number(form.price),
-        stock: Number(form.stock),
+        price,
+        stock,
         categoryId: form.categoryId ?? null,
-        files, 
+        amenityIds: form.amenityIds || [],
+        files,
       };
 
-      if (routeId) {
-        await productsApi.updateMultipart(routeId, payload);
-      } else {
-        await productsApi.createMultipart(payload);
-      }
+      if (routeId) await productsApi.updateMultipart(routeId, payload);
+      else await productsApi.createMultipart(payload);
 
       navigate("/administracion/alojamientos");
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error(err);
       setError("No se pudo guardar el alojamiento.");
     } finally {
       setSaving(false);
@@ -142,15 +168,14 @@ export default function AddProduct() {
         </div>
 
         <div className="row">
-          <label>Descripción</label>
+          <label>Descripcion</label>
           <textarea
             className="textarea"
             rows={4}
             value={form.description}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, description: e.target.value }))
-            }
+            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
             disabled={saving}
+            required
           />
         </div>
 
@@ -164,11 +189,11 @@ export default function AddProduct() {
               className="input"
               type="number"
               step="0.01"
+              min="0.01"
               value={form.price}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, price: e.target.value }))
-              }
+              onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
               disabled={saving}
+              required
             />
           </label>
 
@@ -177,11 +202,12 @@ export default function AddProduct() {
             <input
               className="input"
               type="number"
+              min="1"
+              step="1"
               value={form.stock}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, stock: e.target.value }))
-              }
+              onChange={(e) => setForm((f) => ({ ...f, stock: e.target.value }))}
               disabled={saving}
+              required
             />
           </label>
         </div>
@@ -206,38 +232,59 @@ export default function AddProduct() {
           />
         </div>
 
-        {routeId &&
-          Array.isArray(form.imageUrls) &&
-          form.imageUrls.length > 0 && (
-            <div className="row">
-              <label>Imágenes actuales</label>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(90px,1fr))",
-                  gap: 8,
-                }}
-              >
-                {form.imageUrls.map((src, i) => (
-                  <img
-                    key={i}
-                    src={toAbsoluteUrl(src)}
-                    alt={`img-${i}`}
-                    style={{
-                      width: "100%",
-                      height: 80,
-                      objectFit: "cover",
-                      borderRadius: 8,
-                      border: "1px solid rgba(175, 149, 236, 0.34)",
-                    }}
-                  />
-                ))}
-              </div>
+        <div className="row">
+          <label>Caracteristicas (amenities)</label>
+          <select
+            className="select"
+            multiple
+            value={(form.amenityIds || []).map(String)}
+            onChange={(e) => {
+              const selected = Array.from(e.target.selectedOptions || [])
+                .map((option) => Number(option.value))
+                .filter((n) => Number.isFinite(n));
+              setForm((prev) => ({ ...prev, amenityIds: selected }));
+            }}
+            disabled={saving}
+            style={{ minHeight: 140 }}
+          >
+            {amenities.map((amenity) => (
+              <option key={amenity.id} value={amenity.id}>
+                {amenity.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {routeId && Array.isArray(form.imageUrls) && form.imageUrls.length > 0 && (
+          <div className="row">
+            <label>Imagenes actuales</label>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(90px,1fr))",
+                gap: 8,
+              }}
+            >
+              {form.imageUrls.map((src, i) => (
+                <img
+                  key={i}
+                  src={toAbsoluteUrl(src)}
+                  alt={`img-${i}`}
+                  style={{
+                    width: "100%",
+                    height: 80,
+                    objectFit: "cover",
+                    borderRadius: 8,
+                    border: "1px solid rgba(175, 149, 236, 0.34)",
+                  }}
+                />
+              ))}
             </div>
-          )}
+          </div>
+        )}
 
         <div className="row">
-          <label>Nuevas imágenes (opcional)</label>
+          <label>{routeId ? "Nuevas imagenes (opcional)" : "Imagenes (obligatorio)"}</label>
           <input
             className="input-file"
             type="file"
@@ -245,6 +292,7 @@ export default function AddProduct() {
             multiple
             onChange={onPickFiles}
             disabled={saving}
+            required={!routeId}
           />
           {previews.length > 0 && (
             <div
@@ -290,5 +338,3 @@ export default function AddProduct() {
     </div>
   );
 }
-
-

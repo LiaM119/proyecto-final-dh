@@ -12,7 +12,7 @@ public class Reservable {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private com.tuapp.reservables.model.ReservableType type;
+    private ReservableType type;
 
     @Column(nullable = false, length = 120)
     private String name;
@@ -24,8 +24,8 @@ public class Reservable {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public com.tuapp.reservables.model.ReservableType getType() { return type; }
-    public void setType(com.tuapp.reservables.model.ReservableType type) { this.type = type; }
+    public ReservableType getType() { return type; }
+    public void setType(ReservableType type) { this.type = type; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }

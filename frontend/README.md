@@ -1,16 +1,76 @@
-# React + Vite
+# Frontend Turmalin
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este modulo contiene la aplicacion web de Turmalin desarrollada con React + Vite.
 
-Currently, two official plugins are available:
+## Tecnologias
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React 19
+- Vite
+- React Router
+- Swiper
+- CSS modular por pantalla/componente
 
-## React Compiler
+## Requisitos
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+- Node.js 20 o superior
+- npm 10 o superior
 
-## Expanding the ESLint configuration
+## Instalacion
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm install
+```
+
+## Ejecucion en desarrollo
+
+```bash
+npm run dev
+```
+
+La app se levanta por defecto en `http://localhost:5173`.
+
+## Variables de entorno
+
+Crear archivo `.env` en esta carpeta (`frontend/.env`):
+
+```env
+VITE_API_URL=http://localhost:8080
+```
+
+## Scripts disponibles
+
+- `npm run dev`: levanta entorno local con recarga en caliente.
+- `npm run build`: genera build de produccion.
+- `npm run preview`: sirve localmente el build generado.
+- `npm run lint`: ejecuta reglas de ESLint.
+
+## Estructura principal
+
+```text
+frontend/
+|-- src/
+|   |-- api/           # clientes HTTP y servicios
+|   |-- components/    # componentes de UI
+|   |-- context/       # estado global (auth, favoritos)
+|   |-- pages/         # paginas y vistas
+|   |-- routes/        # rutas protegidas
+|   `-- styles/        # estilos CSS
+|-- public/
+`-- vite.config.js
+```
+
+## Flujos cubiertos
+
+- Home y catalogo de alojamientos.
+- Detalle de alojamiento.
+- Login y registro.
+- Favoritos.
+- Reserva y confirmacion.
+- Historial de reservas.
+- Panel de administracion (segun rol).
+
+## Documentacion general
+
+Para arquitectura completa del proyecto, backend, endpoints y testing, revisar el README raiz:
+
+- `../README.md`

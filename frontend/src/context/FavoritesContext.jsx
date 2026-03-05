@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
 import { addFavorite, getFavoriteIds, removeFavorite } from "../api/favorites";
 import { AUTH_TOKEN_KEY } from "../api/http";
+import { useAuth } from "./AuthContext.jsx";
 
 const FavoritesContext = createContext(null);
 
@@ -11,10 +12,17 @@ export function emitFavoritesChanged() {
 }
 
 export function FavoritesProvider({ children }) {
+  const { token, user, isLogged: authIsLogged } = useAuth();
   const [favoriteIds, setFavoriteIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
 
-  const isLogged = !!localStorage.getItem(AUTH_TOKEN_KEY);
+  const isLogged = Boolean(authIsLogged && token && user);
+  const sessionScope = `${user?.id ?? user?.email ?? "anon"}:${token ? token.slice(-16) : "no-token"}`;
+
+  useEffect(() => {
+    setFavoriteIds(new Set());
+    setLoading(isLogged);
+  }, [sessionScope, isLogged]);
 
   const refresh = useCallback(async () => {
     if (!isLogged) {
@@ -32,7 +40,7 @@ export function FavoritesProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, [isLogged]);
+  }, [isLogged, token]);
 
   useEffect(() => {
     let alive = true;
@@ -56,7 +64,8 @@ export function FavoritesProvider({ children }) {
   useEffect(() => {
     const onStorage = (e) => {
       if (!e.key) return;
-      if (e.key.toLowerCase().includes("favorite")) refresh();
+      const key = e.key.toLowerCase();
+      if (key.includes("favorite") || e.key === AUTH_TOKEN_KEY) refresh();
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);

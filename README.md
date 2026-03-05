@@ -1,200 +1,247 @@
-# 🧭 Sprint 1 — Entregables
+# Turmalin - Plataforma de alojamientos y reservas
 
----
+Turmalin es una aplicacion web full stack para publicar alojamientos, explorar catalogo, gestionar favoritos y concretar reservas con autenticacion de usuarios y panel de administracion.
 
-## 🟣 01. Documentación / Bitácora  
-**Rol:** Scrum Master  
+## 1. Objetivo del proyecto
 
-### 🧩 Definición del proyecto  
-**Nombre:** **Turmalin**  
-**Tipo:** Plataforma web de servicio técnico y venta de productos tecnológicos.  
-**Descripción general:**  
-Turmalin es una aplicación web full stack desarrollada con **Java Spring Boot (backend)** y **React + Vite (frontend)**.  
-Su objetivo es ofrecer una **plataforma de reservas y administración de servicios técnicos de PC**, además de una sección de catálogo de productos tecnológicos.  
+El proyecto busca resolver dos necesidades principales:
 
-### 🎯 Objetivo del proyecto  
-Crear una herramienta que permita:
-- A los usuarios: visualizar productos, acceder a información de servicios y contactarse con el negocio.  
-- A los administradores: gestionar productos (crear, listar, editar y eliminar) mediante un panel interno.
+- Para usuarios finales: descubrir alojamientos, consultar detalle, guardar favoritos, reservar y consultar historial.
+- Para administradores: gestionar alojamientos, categorias, caracteristicas y permisos de usuarios desde un panel interno.
 
-### 💡 Solución que se desarrolla  
-- Un **sitio responsive y moderno** donde se integran servicios y productos.  
-- Sistema de **ABM (Alta, Baja, Modificación)** de productos conectado al backend mediante API REST.  
-- Manejo de imágenes de productos con almacenamiento en servidor.  
-- Estructura base para incorporar módulos futuros: reservas, login, dashboard, etc.
+## 2. Alcance funcional actual
 
----
+### Funcionalidades para usuarios
 
-## 🟠 02. Diseño de identidad de marca  
-**Rol:** Referente UX/UI  
+- Registro e inicio de sesion con JWT.
+- Listado de alojamientos y vista de detalle.
+- Filtro y seleccion de disponibilidad por fechas.
+- Creacion de reservas.
+- Historial personal de reservas (`/mis-reservas`).
+- Gestion de favoritos por usuario.
+- Resenas por alojamiento (crear/actualizar/eliminar resena propia).
+- Pagina de contacto y boton flotante de WhatsApp.
 
-### 🎨 Logo y nombre  
-**Nombre de marca:** **Turmalin**  
-Inspirado en la piedra *turmalina*, símbolo de protección y energía, transmite seguridad y tecnología.  
-El logo está compuesto por:
-- Ícono geométrico tipo cristal (forma de turmalina).  
-- Tipografía moderna sans-serif.  
-- Colores principales oscuros con acento violeta, representando profesionalismo y tecnología.
+### Funcionalidades para administradores
 
-### 🎨 Paleta de colores  
-| Rol | Color | Hex |
-|------|--------|------|
-| Fondo principal | Azul oscuro / negro profundo | `#0d0f14` |
-| Superficie | Gris azulado oscuro | `#151821` |
-| Texto | Blanco puro | `#ffffff` |
-| Acento principal | Violeta | `#6e4ff7` |
-| Acento secundario | Lila claro | `#8f7bff` |
-| Líneas y bordes | Gris profundo | `#222736` |
+- Panel de administracion protegido por rol.
+- ABM de alojamientos con carga de imagenes (multipart).
+- ABM de tipos/categorias de alojamiento.
+- ABM de caracteristicas (amenities).
+- Gestion de usuarios y cambio de rol admin/user.
 
-> Estos colores se aplican en todo el sitio, incluyendo el header fijo, botones, y fondo del hero principal.  
-> El diseño mantiene una estética **oscura, limpia y profesional**, alineada con el rubro tecnológico.
+### Funcionalidades en progreso
 
----
+- Modulo de reservas administrativas (`/administracion/reservas`) aun en estado placeholder de UI.
 
-## 🟣 03. Planificación y ejecución de los tests  
-**Rol:** Team Leader Testing  
+## 3. Historias de usuario y pendientes
 
-### 🔍 Casos de prueba (basados en historias de usuario)
+A partir del estado actual del codigo, aun quedan pendientes para completar historias de usuario de gestion integral:
 
-| ID | Historia de usuario | Caso de prueba | Resultado esperado |
-|----|----------------------|----------------|--------------------|
-| T1 | Como administrador quiero ver todos los productos disponibles | Acceder a `/administracion/productos` | Se muestra la tabla con ID, Nombre y Acciones |
-| T2 | Como administrador quiero eliminar un producto | Hacer clic en “Eliminar” en la tabla | El producto desaparece de la lista y se elimina del backend |
-| T3 | Como administrador quiero agregar un nuevo producto | Navegar a `/admin/productos/nuevo` y completar formulario | El producto se guarda y aparece en el listado |
-| T4 | Como usuario quiero ver el detalle de un producto | Entrar a `/productos/:id` | Se muestra imagen, descripción, precio y stock |
+- Gestion administrativa completa de reservas (listar, filtrar, cambiar estado, cancelar).
+- Documentar y automatizar escenarios E2E de punta a punta (reserva + email + historial).
+- Consolidar cobertura de tests de controladores/repositorios (hoy la mayor parte esta en servicios/validaciones).
 
-### 🧪 Ejecución de los tests
-- Los endpoints `/api/products` y `/api/products/{id}` fueron verificados con **Postman**.  
-- El listado de productos fue probado en el navegador mediante el componente React `AdminProductsList.jsx`.  
-- Se verificó que el frontend consuma correctamente la API con respuesta JSON.  
-- En caso de error (por ejemplo, servidor caído o sin JSON válido), se muestra mensaje en consola con estado HTTP.
+## 4. Paleta de colores utilizada
 
----
+La identidad visual actual del frontend usa una linea oscura con acentos violetas:
 
-## 🟣 04. Actualizar repositorio  
-**Roles actuales:** TL Frontend, TL Backend, TL BBDD, TL Infra  
+- Fondo base: `#0b0d16`
+- Fondo secciones secundarias: `#151821`, `#0c1020`, `#050711`
+- Fondo cards: `#121833`, `#0d1226`
+- Texto principal: `#eef1ff`, `#ffffff`
+- Texto secundario: `#b7bedf`, `#a7adbb`
+- Acento principal (brand): `#6d5ef3` / `#6e4ff7`
+- Acento secundario: `#8c77ff`
+- Bordes: `#222736` y `rgba(255,255,255,.12)`
 
-### 📂 Repositorio público  
-Todo el código está alojado en el repositorio:  
-> `https://github.com/LiamRomero/proyecto-final-dh`
+Referencias: `frontend/src/index.css`, `frontend/src/styles/Home.css`, `frontend/src/styles/Header.css`, `frontend/src/styles/Footer.css`.
 
-### 🗂️ Estructura general
-```
+## 5. Arquitectura general
+
+```text
 proyecto-final-dh/
-├── backend/
-│   └── products-api/
-│       ├── src/main/java/com/turmalin/productsapi
-│       │   ├── config/
-│       │   ├── product/
-│       │   ├── storage/
-│       │   └── ProductsApiApplication.java
-│       └── src/main/resources/
-│           ├── static/
-│           └── application.properties
-└── frontend/
-    └── src/
-        ├── api/
-        ├── components/
-        ├── pages/admin/
-        ├── styles/
-        ├── assets/
-        └── App.jsx
+|-- backend/
+|   `-- products-api/          # API REST con Spring Boot
+|-- frontend/                  # SPA React + Vite
+|-- README.md                  # Documentacion principal
+`-- assets varios (logo/fondos)
 ```
 
-### 💾 Detalles técnicos
-- **Frontend:** React + Vite, CSS puro, Swiper.js.  
-- **Backend:** Spring Boot + Maven + H2 (o MySQL en despliegue).  
-- **Endpoints:** `/api/products`, `/api/products/{id}`, `/api/products/check-name`.  
-- **Control de versiones:** Git con ramas dedicadas (por ejemplo, `carrousel-home`, `panel-admin`, etc.).  
+### Stack tecnico
 
+- Frontend: React 19, Vite, React Router, Swiper, CSS.
+- Backend: Java 17, Spring Boot 3, Spring Security, Spring Data JPA, Validation, Mail.
+- Base de datos: H2 en archivo local (`backend/products-api/data/productsdb.mv.db`).
+- Autenticacion: JWT Bearer Token.
+- Storage de imagenes: carpeta local `backend/products-api/uploads/`.
 
-# 🟣 Sprint 3 — Documentación Oficial
-## Proyecto: Turmalin
+## 6. Endpoints principales
 
----
+### Auth
 
-## 🧩 01. Documentación / Bitácora  
-**Rol:** Scrum Master  
+- `POST /auth/register`
+- `POST /auth/login`
+- `GET /auth/me`
 
----
+### Productos y catalogo
 
-### 📌 Contexto del Sprint  
+- `GET /api/products`
+- `GET /api/products/{id}`
+- `POST /api/products` (admin)
+- `PUT /api/products/{id}` (admin)
+- `DELETE /api/products/{id}` (admin)
 
-El Sprint 3 tuvo como objetivo consolidar la arquitectura del proyecto Turmalin, estabilizar la integración entre frontend y backend, mejorar validaciones y reforzar la estructura del repositorio para garantizar escalabilidad futura.
+### Categorias y caracteristicas
 
----
+- `GET /api/categories`
+- `POST|PUT|DELETE /api/categories/*` (admin)
+- `GET /api/amenities`
+- `POST|PUT|DELETE /api/amenities/*` (admin)
 
-### 🎯 Objetivos del Sprint 3  
+### Reservas
 
-- Consolidar la integración cliente-servidor.
-- Optimizar el ABM de productos y categorías.
-- Mejorar manejo de errores HTTP en frontend.
-- Validar consumo correcto de endpoints REST.
-- Estabilizar estructura modular del backend.
-- Preparar la base para módulos futuros (reservas, autenticación avanzada, dashboard).
+- `GET /api/reservables/{id}`
+- `GET /api/reservables/{id}/availability`
+- `POST /api/reservations`
+- `GET /api/reservations/me`
+- `GET /api/reservations/available`
 
----
+### Favoritos y Resenas
 
-### 💡 Funcionalidades trabajadas en este Sprint  
+- `GET|POST|DELETE /api/favorites/*`
+- `GET|POST|DELETE /api/products/{productId}/reviews*`
 
-- Integración completa entre React y Spring Boot mediante API REST.
-- Validaciones en formularios administrativos.
-- Manejo correcto de respuestas JSON.
-- Control de errores en frontend ante fallas del backend.
-- Mejora en organización de paquetes del backend (`config`, `product`, `auth`, `storage`, etc.).
-- Optimización visual manteniendo identidad de marca.
-- Estructura preparada para escalabilidad futura.
+## 7. Como ejecutar el proyecto localmente
 
----
+### Requisitos
 
-## 🧪 02. Planificación y Ejecución de Tests  
-**Rol:** Team Leader Testing  
+- Node.js 20+
+- npm 10+
+- Java 17
+- Maven (o `./mvnw` incluido)
 
----
+### Backend
 
-### 🔎 Alcance de pruebas  
+Ubicacion:
 
-Se realizaron pruebas funcionales sobre:
+```powershell
+cd backend/products-api
+```
 
-- Endpoints REST del backend.
-- Flujo completo de ABM de productos.
-- Visualización de detalle en frontend.
-- Integración entre frontend y backend.
-- Manejo de errores ante respuestas HTTP incorrectas.
+Ejecucion:
 
----
+```powershell
+./mvnw spring-boot:run
+```
 
-### 🛠 Herramientas utilizadas  
+El backend queda en `http://localhost:8080`.
 
-- Postman (verificación de endpoints REST).
-- Navegador (Chrome) para pruebas de interfaz.
-- Consola del navegador para validación de respuestas HTTP.
-- Logs del backend en entorno local.
+### Frontend
 
----
+Ubicacion:
 
-### ✅ Resultados  
+```powershell
+cd frontend
+```
 
-- Los endpoints `/api/products` y `/api/products/{id}` responden correctamente.
-- Las operaciones de creación y eliminación impactan correctamente en base de datos.
-- El frontend consume adecuadamente la API.
-- Los errores del servidor son detectados y gestionados.
-- No se detectaron fallas críticas en el flujo principal.
+Instalar dependencias:
 
----
+```powershell
+npm install
+```
 
-## 🗂 03. Actualización del Repositorio  
-**Roles involucrados:** TL Frontend – TL Backend – TL BBDD – TL Infra  
+Levantar entorno dev:
 
----
+```powershell
+npm run dev
+```
 
-### 📂 Repositorio público  
+El frontend queda en `http://localhost:5173`.
 
-El código correspondiente al Sprint 3 se encuentra disponible en:
+### Variables de entorno
 
-👉 https://github.com/LiamRomero/proyecto-final-dh  
+Frontend (`frontend/.env`):
 
----
+```env
+VITE_API_URL=http://localhost:8080
+```
 
-### 🏗 Estructura actual del proyecto  
+Backend (opcional en `.env.properties`):
+
+- `MAIL_HOST`
+- `MAIL_PORT`
+- `MAIL_USERNAME`
+- `MAIL_PASSWORD`
+- `RESERVATION_EMAIL_ENABLED`
+
+## 8. Como se usa la pagina
+
+### Flujo usuario
+
+1. Entrar al home y explorar alojamientos.
+2. Abrir detalle de un alojamiento.
+3. Iniciar sesion o registrarse.
+4. Seleccionar fechas y confirmar reserva.
+5. Revisar reservas en `/mis-reservas`.
+6. Guardar o quitar favoritos segun preferencia.
+
+### Flujo administrador
+
+1. Iniciar sesion con usuario admin.
+2. Ir a `/administracion`.
+3. Gestionar alojamientos, categorias, caracteristicas y usuarios.
+4. Usar acciones de alta/edicion/baja desde tablas y formularios.
+
+## 9. Testing actual
+
+El proyecto tiene tests automatizados en backend (JUnit + Mockito), por ejemplo:
+
+- `ProductsApiApplicationTests` (context load)
+- `DtoValidationTest` (validaciones DTO)
+- `AuthServiceTest` (auth y reglas de negocio)
+- `UserManagementServiceTest` (permisos de usuarios)
+
+Comando:
+
+```powershell
+cd backend/products-api
+./mvnw test
+```
+
+## Estado de evidencia de tests
+
+Actualmente no existe en el repositorio un documento formal de evidencia de ejecucion (capturas, fecha/hora, resultado por suite) que respalde el listado de tests mencionado historicamente.
+
+Recomendacion minima para cerrar este gap:
+
+- Crear `docs/testing/test-evidence.md`.
+- Adjuntar fecha de corrida, comando ejecutado, salida resumida y capturas/logs.
+- Registrar al menos: resultado total, tests fallidos, entorno (SO, Java, Node).
+
+## 10. Scripts utiles
+
+Frontend:
+
+- `npm run dev`
+- `npm run build`
+- `npm run preview`
+- `npm run lint`
+
+Backend:
+
+- `./mvnw spring-boot:run`
+- `./mvnw test`
+
+## 11. Riesgos tecnicos y mejoras recomendadas
+
+- Homologar URLs hardcodeadas en frontend para usar siempre `VITE_API_URL`.
+- Ampliar test suite con integracion de controladores y repositorios.
+- Implementar modulo admin de reservas (hoy en progreso).
+- Incorporar pipeline CI para correr lint + tests en cada PR.
+
+## 12. Estado del proyecto
+
+Proyecto funcional para flujo principal de catalogo + autenticacion + reservas + administracion basica, con backlog abierto en gestion avanzada de reservas y formalizacion de evidencia QA.
+
 

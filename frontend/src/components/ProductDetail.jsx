@@ -396,7 +396,9 @@ export default function ProductDetail({ fetchById }) {
               {product.stock > 0 ? `CAPACIDAD: ${product.stock} HUESPEDES` : "SIN DISPONIBILIDAD"}
             </span>
           )}
-          {product.category && <span className="chip ghost">{product.category}</span>}
+          {(product.categoryName || product.category) && (
+            <span className="chip ghost">{product.categoryName || product.category}</span>
+          )}
         </div>
 
         <div className="pdp-price">{money(product.price)}</div>
@@ -434,11 +436,18 @@ export default function ProductDetail({ fetchById }) {
 
         </div>
 
-                <ul className="pdp-perks">
+        <ul className="pdp-perks">
           <li>Check-in desde las 15:00</li>
           <li>Cancelacion flexible segun tarifa</li>
           <li>Atencion al huesped 24/7</li>
         </ul>
+        {Array.isArray(product.amenities) && product.amenities.length > 0 && (
+          <ul className="pdp-perks">
+            {product.amenities.map((amenity) => (
+              <li key={amenity.id || amenity.name}>{amenity.name}</li>
+            ))}
+          </ul>
+        )}
         {/* Reservas */}
         <div style={{ marginTop: 18 }}>
           <div className="cal">

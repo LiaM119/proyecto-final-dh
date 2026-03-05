@@ -26,6 +26,7 @@ import AddProduct from "./pages/admin/AddProduct.jsx";
 import AdminUsers from "./pages/admin/AdminUsers.jsx";
 import AdminCategories from "./pages/admin/AdminCategories.jsx";
 import AdminReservations from "./pages/admin/AdminReservations.jsx";
+import AdminAmenities from "./pages/admin/AdminAmenities.jsx";
 
 import Reservas from "./pages/Reservas.jsx";
 
@@ -118,6 +119,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 <Route path="usuarios" element={<AdminUsers />} />
                 <Route path="tipos-alojamiento" element={<AdminCategories />} />
                 <Route path="categorias" element={<AdminCategories />} />
+                <Route path="caracteristicas" element={<AdminAmenities />} />
                 <Route path="reservas" element={<AdminReservations />} />
               </Route>
 

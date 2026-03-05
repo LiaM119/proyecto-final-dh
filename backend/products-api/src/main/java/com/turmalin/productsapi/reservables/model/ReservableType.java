@@ -1,4 +1,4 @@
-package com.tuapp.reservables.model;
+package com.turmalin.productsapi.reservables.model;
 
 public enum ReservableType {
     PRODUCT,

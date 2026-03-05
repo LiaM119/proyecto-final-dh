@@ -16,6 +16,10 @@ export const authApi = {
     return data;
   },
 
+  me: async () => {
+    return http.get("/auth/me");
+  },
+
   logout: () => {
     localStorage.removeItem(AUTH_TOKEN_KEY);
   },

@@ -66,10 +66,6 @@ public class ReviewService {
 
     @Transactional
     public ReviewResponse upsertMyReview(Long productId, ReviewRequest req, User currentUser) {
-        if (req.getRating() == null || req.getRating() < 1 || req.getRating() > 5) {
-            throw new IllegalArgumentException("La puntuacion debe estar entre 1 y 5");
-        }
-
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new EntityNotFoundException("Alojamiento no encontrado"));
 

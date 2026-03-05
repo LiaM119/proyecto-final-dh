@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { productsApi } from "../api/products";
+import { useAuth } from "../context/AuthContext";
 import FavoriteButton from "./FavoriteButton";
 import ShareButton from "./ShareButton";
 import "../styles/Productos.css";
@@ -18,6 +19,8 @@ const FALLBACK_IMG =
       "font-family='Arial, sans-serif' font-size='34'>Turmalin</text></svg>"
   );
 
+const PAGE_SIZE = 10;
+
 const toAbsoluteUrl = (u = "") => {
   if (!u) return "";
   const s = u.replace(/\\/g, "/");
@@ -27,91 +30,102 @@ const toAbsoluteUrl = (u = "") => {
   return `${API_BASE}/uploads/${clean}`;
 };
 
-const PAGE_SIZE = 10;
+function isAdminUser(user) {
+  if (!user) return false;
+  if (user.admin === true) return true;
+  const role = String(user.role || "").toUpperCase();
+  return role === "ADMIN" || role === "ROLE_ADMIN";
+}
 
 export default function Productos() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const { user } = useAuth();
 
-  const [items, setItems] = useState([]);
-  const [total, setTotal] = useState(0);
+  const [allItems, setAllItems] = useState([]);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [advFilterIds, setAdvFilterIds] = useState(null);
 
-  const [allItems, setAllItems] = useState(null);
+  const categoryId = Number(searchParams.get("category"));
+  const hasCategoryFilter = Number.isFinite(categoryId) && categoryId > 0;
+  const showAdminActions = isAdminUser(user);
 
   useEffect(() => {
     let cancelled = false;
-
-    const load = async () => {
+    (async () => {
       setLoading(true);
       setError("");
-
-      try {
-        const res = await fetch(
-          `${API_BASE}/api/products?page=${page - 1}&size=${PAGE_SIZE}`
-        );
-
-        if (res.ok) {
-          const data = await res.json();
-          if (
-            data &&
-            Array.isArray(data.content) &&
-            typeof data.totalElements === "number"
-          ) {
-            if (cancelled) return;
-            setItems(data.content);
-            setTotal(data.totalElements);
-            setTotalPages(Math.max(1, data.totalPages || 1));
-            setAllItems(null);
-            setLoading(false);
-            return;
-          }
-        }
-      } catch {
-        void 0;
-      }
-
       try {
         const data = await productsApi.getAll();
-        const list = Array.isArray(data) ? data : [];
         if (cancelled) return;
-
-        const tp = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
-        const safePage = Math.min(Math.max(1, page), tp);
-        const start = (safePage - 1) * PAGE_SIZE;
-        const slice = list.slice(start, start + PAGE_SIZE);
-
-        setAllItems(list);
-        setItems(slice);
-        setTotal(list.length);
-        setTotalPages(tp);
-        if (safePage !== page) setPage(safePage);
-        setLoading(false);
+        setAllItems(Array.isArray(data) ? data : []);
       } catch {
         if (cancelled) return;
         setError("No se pudo cargar alojamientos");
-        setLoading(false);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-    };
-
-    load();
+    })();
     return () => {
       cancelled = true;
     };
-  }, [page]);
+  }, []);
 
   useEffect(() => {
-    if (!allItems) return;
-    const tp = Math.max(1, Math.ceil(allItems.length / PAGE_SIZE));
-    if (page > tp) setPage(tp);
-  }, [allItems, page]);
+    const onProductsRoute =
+      location.pathname.startsWith("/alojamientos") || location.pathname.startsWith("/productos");
+    if (!onProductsRoute) return;
 
-  const goFirst = () => setPage(1);
-  const goPrev = () => setPage((p) => Math.max(1, p - 1));
-  const goNext = () => setPage((p) => Math.min(totalPages, p + 1));
-  const goLast = () => setPage(totalPages);
+    try {
+      const raw = localStorage.getItem("advSearch");
+      if (!raw) {
+        setAdvFilterIds(null);
+        return;
+      }
+      const parsed = JSON.parse(raw);
+      const ids = Array.isArray(parsed?.results)
+        ? parsed.results.map((item) => Number(item?.id)).filter((id) => Number.isFinite(id))
+        : [];
+      setAdvFilterIds(new Set(ids));
+      localStorage.removeItem("advSearch");
+    } catch {
+      setAdvFilterIds(null);
+    }
+  }, [location.pathname, location.search]);
+
+  const filteredItems = useMemo(() => {
+    let list = Array.isArray(allItems) ? allItems : [];
+
+    if (hasCategoryFilter) {
+      list = list.filter((p) => Number(p?.categoryId ?? p?.category?.id) === categoryId);
+    }
+
+    if (advFilterIds instanceof Set) {
+      list = list.filter((p) => advFilterIds.has(Number(p?.id)));
+    }
+
+    return list;
+  }, [allItems, hasCategoryFilter, categoryId, advFilterIds]);
+
+  const total = filteredItems.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  const items = useMemo(() => {
+    const safePage = Math.min(Math.max(page, 1), totalPages);
+    const start = (safePage - 1) * PAGE_SIZE;
+    return filteredItems.slice(start, start + PAGE_SIZE);
+  }, [filteredItems, page, totalPages]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [hasCategoryFilter, categoryId, advFilterIds]);
 
   const getCardImage = (product) => {
     const raw = product?.imageUrls ?? product?.imagesUrls ?? [];
@@ -120,8 +134,10 @@ export default function Productos() {
     return src || FALLBACK_IMG;
   };
 
-  const getCategoryName = (category) =>
-    typeof category === "string" ? category : category?.name;
+  const getCategoryName = (category, categoryName) => {
+    if (typeof categoryName === "string" && categoryName.trim()) return categoryName;
+    return typeof category === "string" ? category : category?.name;
+  };
 
   if (loading) {
     return (
@@ -148,21 +164,22 @@ export default function Productos() {
       <div className="products-shell">
         <div className="products-header">
           <h1>Alojamientos</h1>
-          <button
-            className="addProductButton"
-            onClick={() => navigate("/admin/alojamientos/nuevo")}
-          >
-            Agregar alojamiento
-          </button>
+          {showAdminActions && (
+            <button
+              className="addProductButton"
+              onClick={() => navigate("/administracion/alojamientos/nuevo")}
+            >
+              Agregar alojamiento
+            </button>
+          )}
         </div>
 
-        {!items.length && <p className="products-empty">No hay alojamientos en esta pagina.</p>}
+        {!items.length && <p className="products-empty">No hay alojamientos para los filtros actuales.</p>}
 
         <div className="grid">
           {items.map((p, idx) => {
-            const goDetail = () =>
-              navigate(`/alojamientos/${p.id}`, { state: { product: p } });
-            const categoryName = getCategoryName(p?.category);
+            const goDetail = () => navigate(`/alojamientos/${p.id}`, { state: { product: p } });
+            const categoryName = getCategoryName(p?.category, p?.categoryName);
 
             return (
               <article
@@ -214,7 +231,7 @@ export default function Productos() {
         <nav className="paginator" aria-label="Paginacion de alojamientos">
           <button
             className="pag-btn"
-            onClick={goFirst}
+            onClick={() => setPage(1)}
             disabled={page <= 1}
             aria-label="Ir al inicio"
             title="Inicio"
@@ -223,7 +240,7 @@ export default function Productos() {
           </button>
           <button
             className="pag-btn"
-            onClick={goPrev}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1}
             aria-label="Pagina anterior"
             title="Anterior"
@@ -232,18 +249,12 @@ export default function Productos() {
           </button>
 
           <span className="page-info">
-            Pagina <b>{page}</b> de <b>{totalPages}</b>
-            {typeof total === "number" ? (
-              <>
-                {" "}
-                - <b>{total}</b> alojamientos
-              </>
-            ) : null}
+            Pagina <b>{Math.min(page, totalPages)}</b> de <b>{totalPages}</b> - <b>{total}</b> alojamientos
           </span>
 
           <button
             className="pag-btn"
-            onClick={goNext}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page >= totalPages}
             aria-label="Pagina siguiente"
             title="Siguiente"
@@ -252,7 +263,7 @@ export default function Productos() {
           </button>
           <button
             className="pag-btn"
-            onClick={goLast}
+            onClick={() => setPage(totalPages)}
             disabled={page >= totalPages}
             aria-label="Ir al final"
             title="Final"

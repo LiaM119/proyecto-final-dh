@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
 import { categoriesApi } from "../api/categories";
+import { reservationsApi } from "../api/reservations";
 import SearchBlock from "./SearchBlock.jsx";
 import "../styles/Header.css";
 import "../styles/AdvancedSearchModal.css";
@@ -83,7 +84,16 @@ export default function Header() {
     setOpen(false);
   };
 
+  const toISODate = (date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
+
   const isAuthenticated = !!user && !!token;
+  const userRole = String(user?.role || "").toUpperCase();
+  const isAdmin = user?.admin === true || userRole === "ROLE_ADMIN" || userRole === "ADMIN";
 
   return (
     <>
@@ -166,6 +176,11 @@ export default function Header() {
                 <NavLink to="/mis-reservas" className="hdr__link">
                   Mis reservas
                 </NavLink>
+                {isAdmin && (
+                  <NavLink to="/administracion" className="hdr__link">
+                    Administracion
+                  </NavLink>
+                )}
                 <span className="hdr__user">
                   {user.name || "Usuario"}
                 </span>
@@ -202,10 +217,34 @@ export default function Header() {
 
             <SearchBlock
               products={products}
-              onSearch={(results, meta) => {
+              categories={categories}
+              onSearch={async (results, meta) => {
+                let filtered = Array.isArray(results) ? results : [];
+                const hasRange = meta?.from instanceof Date && meta?.to instanceof Date;
+
+                if (hasRange) {
+                  try {
+                    const from = toISODate(meta.from);
+                    const to = toISODate(meta.to);
+                    const availableReservableIds = await reservationsApi.findAvailable(from, to);
+                    const availableSet = new Set((availableReservableIds || []).map(Number));
+                    filtered = filtered.filter((p) => availableSet.has(Number(p?.reservableId)));
+                  } catch {
+                    filtered = [];
+                  }
+                }
+
                 localStorage.setItem(
                   "advSearch",
-                  JSON.stringify({ results, meta, ts: Date.now() })
+                  JSON.stringify({
+                    results: filtered,
+                    meta: {
+                      ...meta,
+                      from: meta?.from instanceof Date ? toISODate(meta.from) : null,
+                      to: meta?.to instanceof Date ? toISODate(meta.to) : null,
+                    },
+                    ts: Date.now(),
+                  })
                 );
                 navigate("/alojamientos");
                 setOpenAdv(false);

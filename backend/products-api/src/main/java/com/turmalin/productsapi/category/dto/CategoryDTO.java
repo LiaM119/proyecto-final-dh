@@ -1,9 +1,16 @@
 package com.turmalin.productsapi.category.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 public class CategoryDTO {
     private Long id;
+    @NotBlank(message = "El nombre es obligatorio")
+    @Size(max = 120, message = "El nombre no puede superar 120 caracteres")
     private String name;
+    @Size(max = 500, message = "La descripcion no puede superar 500 caracteres")
     private String description;
+    @Size(max = 160, message = "El slug no puede superar 160 caracteres")
     private String slug;
 
     public CategoryDTO() {}

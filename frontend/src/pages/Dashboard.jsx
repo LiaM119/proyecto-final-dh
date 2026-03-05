@@ -111,6 +111,7 @@ export default function Dashboard() {
             <li>Verifica alojamientos sin imagenes actualizadas.</li>
             <li>Revisa permisos de nuevos usuarios registrados.</li>
             <li>Elimina tipos de alojamiento que no esten en uso.</li>
+            <li>Mantene las caracteristicas actualizadas para nuevos productos.</li>
           </ul>
         </article>
 
@@ -122,6 +123,9 @@ export default function Dashboard() {
             </Link>
             <Link to="/administracion/tipos-alojamiento" className="ap-link-tile">
               Gestionar tipos
+            </Link>
+            <Link to="/administracion/caracteristicas" className="ap-link-tile">
+              Gestionar caracteristicas
             </Link>
             <Link to="/administracion/usuarios" className="ap-link-tile">
               Configurar usuarios

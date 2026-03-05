@@ -1,7 +1,7 @@
-// src/pages/Login.jsx
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import "../styles/Login.css";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -18,42 +18,38 @@ export default function Login() {
     setError("");
 
     if (!email.trim() || !password) {
-      setError("Completá email y contraseña.");
+      setError("Completa email y contrasena.");
       return;
     }
 
     try {
       setLoading(true);
-
       await login(email, password);
 
       const redirect = searchParams.get("redirect");
       navigate(redirect || "/");
     } catch (err) {
-      console.error("Error al iniciar sesión:", err);
-      setError("No se pudo iniciar sesión. Verificá email y contraseña.");
+      console.error("Error al iniciar sesion:", err);
+      setError("No se pudo iniciar sesion. Verifica email y contrasena.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="container" style={{ maxWidth: 520, marginTop: 40 }}>
-      <h1>Iniciar sesión</h1>
-      <p>Accedé a tu cuenta para gestionar tus compras.</p>
+    <section className="login-wrap">
+      <form className="login-card" onSubmit={onSubmit} noValidate>
+        <h1 className="login-title">Iniciar sesion</h1>
+        <p className="login-subtitle">Accede a tu cuenta para gestionar tus reservas.</p>
 
-      {error && (
-        <div className="alert error" style={{ marginTop: 12 }}>
-          {error}
-        </div>
-      )}
+        {error && <div className="login-alert">{error}</div>}
 
-      <form onSubmit={onSubmit} style={{ marginTop: 16 }}>
-        <div className="row">
-          <label>Email</label>
+        <div className="login-field">
+          <label htmlFor="login-email">Email</label>
           <input
+            id="login-email"
             type="email"
-            className="input"
+            className="login-input"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
@@ -61,11 +57,12 @@ export default function Login() {
           />
         </div>
 
-        <div className="row">
-          <label>Contraseña</label>
+        <div className="login-field">
+          <label htmlFor="login-password">Contrasena</label>
           <input
+            id="login-password"
             type="password"
-            className="input"
+            className="login-input"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
@@ -73,12 +70,10 @@ export default function Login() {
           />
         </div>
 
-        <div className="actions" style={{ marginTop: 12 }}>
-          <button className="btn primary" type="submit" disabled={loading}>
-            {loading ? "Ingresando..." : "Entrar"}
-          </button>
-        </div>
+        <button className="login-btn" type="submit" disabled={loading}>
+          {loading ? "Ingresando..." : "Entrar"}
+        </button>
       </form>
-    </div>
+    </section>
   );
 }

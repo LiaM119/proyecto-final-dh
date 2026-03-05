@@ -1,5 +1,6 @@
 package com.turmalin.productsapi.product;
 
+import com.turmalin.productsapi.amenity.Amenity;
 import com.turmalin.productsapi.category.Category;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
@@ -42,6 +43,14 @@ public class Product {
     @JoinColumn(name = "category_id")
     private Category category;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "product_amenities",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "amenity_id")
+    )
+    private List<Amenity> amenities = new ArrayList<>();
+
     @Column(name = "reservable_id")
     private Long reservableId;
 
@@ -65,6 +74,9 @@ public class Product {
 
     public Category getCategory() { return category; }
     public void setCategory(Category category) { this.category = category; }
+
+    public List<Amenity> getAmenities() { return amenities; }
+    public void setAmenities(List<Amenity> amenities) { this.amenities = amenities; }
 
     public Long getReservableId() { return reservableId; }
     public void setReservableId(Long reservableId) { this.reservableId = reservableId; }

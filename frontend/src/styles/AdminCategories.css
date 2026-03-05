@@ -11,6 +11,12 @@
   flex-wrap: wrap;
 }
 
+.admin-cats__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .admin-cats__head h2 {
   margin: 0;
   font-size: 1.2rem;
@@ -54,6 +60,7 @@
 .admin-cats__right {
   display: flex;
   justify-content: flex-end;
+  gap: 8px;
 }
 
 .admin-cats__mono {
@@ -145,6 +152,16 @@
   justify-content: flex-end;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.admin-cats__form {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-cats__form label {
+  display: grid;
+  gap: 6px;
 }
 
 @media (max-width: 760px) {

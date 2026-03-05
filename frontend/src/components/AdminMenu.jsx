@@ -6,6 +6,7 @@ const items = [
   { to: "/administracion/alojamientos", label: "Alojamientos", short: "AL" },
   { to: "/administracion/alojamientos/nuevo", label: "Nuevo alojamiento", short: "NV" },
   { to: "/administracion/tipos-alojamiento", label: "Tipos", short: "TP" },
+  { to: "/administracion/caracteristicas", label: "Caracteristicas", short: "CA" },
   { to: "/administracion/usuarios", label: "Usuarios", short: "US" },
 ];
 

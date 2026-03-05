@@ -6,6 +6,7 @@ import AdminMenu from "../../components/AdminMenu";
 const quickLinks = [
   { to: "/administracion/alojamientos", label: "Alojamientos" },
   { to: "/administracion/tipos-alojamiento", label: "Tipos" },
+  { to: "/administracion/caracteristicas", label: "Caracteristicas" },
   { to: "/administracion/usuarios", label: "Usuarios" },
   { to: "/administracion/reservas", label: "Reservas" },
 ];
@@ -43,6 +44,13 @@ function getSection(pathname) {
     return {
       title: "Tipos de alojamiento",
       description: "Organiza categorias y elimina tipos sin uso.",
+    };
+  }
+
+  if (pathname.startsWith("/administracion/caracteristicas")) {
+    return {
+      title: "Caracteristicas",
+      description: "Crea y edita amenities para asignarlos a los alojamientos.",
     };
   }
 

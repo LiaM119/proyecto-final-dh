@@ -72,6 +72,28 @@
   outline: none;
 }
 
+.sb select.sb__input{
+  color-scheme: dark;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--sb-text) 50%),
+    linear-gradient(135deg, var(--sb-text) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) calc(50% - 2px),
+    calc(100% - 12px) calc(50% - 2px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 34px;
+}
+
+.sb select.sb__input option,
+.sb select.sb__input optgroup{
+  background: #0f1222;
+  color: var(--sb-text);
+}
+
 .sb__input:focus{
   border-color: rgba(109,94,243,.55);
   box-shadow: 0 0 0 4px rgba(109,94,243,.12);
